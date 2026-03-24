@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow Analyst: The Use Case Detective</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
+
+:root {
+  --bg:#06060f; --card:#0d0d1c; --border:#1a1a30;
+  --neon:#00f5ff; --neon2:#ff00aa; --neon3:#aaff00;
+  --gold:#ffd700; --text:#c8d8e8; --dim:#4a5a72;
+  --success:#00ff88; --danger:#ff3355; --warn:#ffaa00;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%; overflow:hidden;
+  background:var(--bg); color:var(--text);
+  font-family:'Rajdhani',sans-serif;
+}
+
+/* Scanlines */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,245,255,.008) 3px, rgba(0,245,255,.008) 4px);
+}
+
+/* ═══ LAYER SYSTEM ═══ */
+/* Everything is absolute layers over the full canvas */
+#root { position:fixed; inset:0; overflow:hidden; }
+
+/* ─ Canvas (background scene) ─ */
+#scene-canvas { position:absolute; inset:0; width:100%; height:100%; }
+
+/* ─ HUD bar ─ */
+#hud {
+  position:absolute; top:0; left:0; right:0; height:48px;
+  background:rgba(6,6,15,.92); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; gap:0; z-index:100;
+  backdrop-filter:blur(8px);
+}
+.hud-seg { display:flex; align-items:center; gap:6px; padding:0 18px; border-right:1px solid var(--border); }
+.hud-seg:last-child { border-right:none; margin-left:auto; }
+.hud-label { font-family:'Share Tech Mono'; font-size:.6rem; color:var(--dim); text-transform:uppercase; letter-spacing:1px; display:block; }
+.hud-val { font-family:'Orbitron'; font-size:.85rem; font-weight:700; color:var(--neon); }
+.hud-val.gold { color:var(--gold); }
+.hud-val.pink { color:var(--neon2); }
+
+/* ─ Speech bubble ─ */
+#speech-wrap {
+  position:absolute; bottom:15%; left:50%; transform:translateX(-50%);
+  min-width:300px; max-width:55%; z-index:50;
+  opacity:0; transition:opacity .3s; pointer-events:none;
+}
+#speech-wrap.show { opacity:1; }
+.speech-bubble {
+  background:#fff; border-radius:18px 18px 18px 4px;
+  padding:14px 18px; position:relative;
+  box-shadow:0 6px 30px rgba(0,0,0,.7);
+}
+.speech-bubble::after {
+  content:''; position:absolute; bottom:-15px; left:32px;
+  border:9px solid transparent; border-top-color:#fff;
+}
+.speech-bubble.dark {
+  background:#0b0b1e; border:1.5px solid var(--neon2);
+}
+.speech-bubble.dark::after { border-top-color:#0b0b1e; }
+.speech-spk {
+  font-family:'Orbitron'; font-size:.65rem; font-weight:900;
+  letter-spacing:1px; margin-bottom:5px;
+}
+.speech-txt {
+  font-family:'Share Tech Mono'; font-size:.8rem; color:#111; line-height:1.55;
+}
+.speech-bubble.dark .speech-txt { color:var(--text); }
+#skip-btn {
+  position:absolute; bottom:calc(15% - 36px); right:24px;
+  background:rgba(0,0,0,.6); border:1px solid var(--dim);
+  border-radius:4px; color:var(--dim); font-family:'Share Tech Mono';
+  font-size:.62rem; padding:4px 12px; cursor:pointer; z-index:60;
+  transition:all .2s;
+}
+#skip-btn:hover { border-color:var(--neon); color:var(--neon); }
+
+/* ─ QUESTION PANEL (slides in from bottom) ─ */
+#question-panel {
+  position:absolute; left:0; right:0; bottom:0;
+  background:linear-gradient(180deg, rgba(6,6,15,0) 0%, rgba(6,6,15,.96) 8%, rgba(6,6,15,.99) 100%);
+  padding:28px 5vw 28px;
+  transform:translateY(100%);
+  transition:transform .5s cubic-bezier(.34,.62,.46,1);
+  z-index:80;
+  max-height:62vh; overflow-y:auto;
+}
+#question-panel.show { transform:translateY(0); }
+#question-panel::-webkit-scrollbar { width:4px; }
+#question-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+.qp-inner { max-width:900px; margin:0 auto; }
+
+.qp-row-top {
+  display:flex; align-items:flex-start; gap:24px; margin-bottom:18px;
+  flex-wrap:wrap;
+}
+.concept-card {
+  flex:0 0 300px; background:rgba(0,245,255,.04);
+  border:1px solid rgba(0,245,255,.15); border-radius:8px;
+  padding:12px 14px; font-size:.76rem; line-height:1.6;
+}
+.concept-card .cc-title {
+  font-family:'Orbitron'; font-size:.64rem; color:var(--neon);
+  letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;
+}
+.concept-card .cc-body { white-space:pre-line; font-family:'Share Tech Mono'; }
+
+.question-main { flex:1; }
+.q-label {
+  font-family:'Orbitron'; font-size:.62rem; color:var(--neon);
+  letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;
+}
+.q-reward-bar {
+  display:flex; align-items:center; gap:10px; margin-bottom:10px;
+}
+.reward-pot {
+  font-family:'Orbitron'; font-size:1rem; color:var(--gold);
+  font-weight:700;
+}
+.reward-pot-label { font-size:.72rem; color:var(--dim); }
+.penalty-row { font-family:'Share Tech Mono'; font-size:.72rem; color:var(--warn); }
+.hint-box {
+  background:rgba(0,245,255,.05); border:1px solid rgba(0,245,255,.12);
+  border-radius:6px; padding:8px 12px; font-size:.76rem; color:var(--dim);
+  margin-bottom:10px;
+}
+.hint-box strong { color:var(--neon); }
+
+.q-text {
+  font-size:1rem; font-weight:600; color:#fff; line-height:1.5;
+  margin-bottom:14px;
+}
+
+/* choices */
+.choice-list { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.c-btn {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 14px; border-radius:6px;
+  border:1px solid var(--border); background:rgba(255,255,255,.03);
+  cursor:pointer; text-align:left; font-family:'Rajdhani';
+  font-size:.88rem; color:var(--text); transition:all .18s;
+}
+.c-btn:hover { border-color:var(--neon); color:#fff; background:rgba(0,245,255,.05); }
+.c-btn.sel { border-color:var(--neon); background:rgba(0,245,255,.08); color:#fff; }
+.c-btn.ok { border-color:var(--success); background:rgba(0,255,136,.08); color:var(--success); }
+.c-btn.no { border-color:var(--danger); background:rgba(255,51,85,.08); color:var(--danger); }
+.c-letter { font-family:'Orbitron'; font-size:.7rem; color:var(--neon); min-width:16px; margin-top:2px; flex-shrink:0; }
+
+/* drag drop */
+.dd-pool { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.dd-chip {
+  padding:7px 13px; border-radius:18px; font-size:.78rem; font-weight:600;
+  cursor:pointer; border:1px solid; transition:all .15s; background:#0d0d1c;
+}
+.dd-chip:hover { transform:scale(1.05); box-shadow:0 0 8px currentColor; }
+.dd-chip.actor { border-color:var(--neon2); color:var(--neon2); }
+.dd-chip.usecase { border-color:var(--neon); color:var(--neon); }
+.dd-cols { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.dd-col {
+  background:rgba(0,0,0,.3); border:1px dashed var(--border);
+  border-radius:6px; padding:10px; min-height:70px;
+}
+.dd-col-title { font-family:'Orbitron'; font-size:.6rem; color:var(--dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; text-align:center; }
+.placed {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:5px 10px; border-radius:18px; font-size:.75rem; font-weight:600;
+  border:1px solid; margin:2px;
+}
+.placed.actor { border-color:var(--neon2); color:var(--neon2); background:rgba(255,0,170,.08); }
+.placed.usecase { border-color:var(--neon); color:var(--neon); background:rgba(0,245,255,.08); }
+.placed .x { cursor:pointer; opacity:.6; }
+.placed .x:hover { opacity:1; }
+
+/* story builder */
+.sb-template {
+  background:rgba(0,0,0,.3); border:1px solid var(--border);
+  border-radius:8px; padding:14px 16px;
+  font-family:'Share Tech Mono'; font-size:.85rem; line-height:2.5;
+}
+.sb-blank {
+  display:inline-block; min-width:120px; border-bottom:2px solid var(--neon);
+  color:var(--neon); padding:0 6px; cursor:pointer; text-align:center;
+}
+.sb-blank.filled { color:var(--neon2); border-bottom-color:var(--neon2); }
+.sb-opts { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+.sb-opt {
+  padding:5px 12px; border-radius:15px; font-size:.76rem;
+  border:1px solid var(--dim); color:var(--text);
+  cursor:pointer; transition:all .15s; background:rgba(0,0,0,.3);
+}
+.sb-opt:hover { border-color:var(--neon2); color:var(--neon2); }
+.sb-opt.used { opacity:.3; cursor:default; pointer-events:none; }
+
+/* feedback */
+.fb-box { padding:10px 14px; border-radius:6px; margin-bottom:10px; font-size:.84rem; line-height:1.5; display:none; }
+.fb-box.ok { display:block; border:1px solid var(--success); background:rgba(0,255,136,.07); color:var(--success); }
+.fb-box.no { display:block; border:1px solid var(--danger); background:rgba(255,51,85,.07); color:var(--danger); }
+
+/* action row */
+.action-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; }
+
+/* ─ FULLSCREEN OVERLAYS ─ */
+.fs-layer {
+  position:absolute; inset:0; z-index:400;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:var(--bg); text-align:center; padding:40px;
+  opacity:0; pointer-events:none; transition:opacity .4s;
+}
+.fs-layer.show { opacity:1; pointer-events:all; }
+
+/* Title screen */
+#scr-title .tl-sub {
+  font-family:'Share Tech Mono'; font-size:.82rem; color:var(--neon);
+  letter-spacing:4px; text-transform:uppercase; animation:blink 2s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+#scr-title h1 {
+  font-family:'Orbitron'; font-size:clamp(2rem,5vw,4rem); font-weight:900;
+  color:#fff; text-shadow:0 0 24px var(--neon),0 0 60px rgba(0,245,255,.3);
+  line-height:1.1; margin:12px 0;
+}
+#scr-title h1 span { color:var(--neon2); text-shadow:0 0 24px var(--neon2); }
+#scr-title .tl-tag { font-size:1rem; color:var(--dim); letter-spacing:2px; margin-bottom:28px; }
+.badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:linear-gradient(135deg,#131328,#0c0c20);
+  border:1px solid var(--neon); border-radius:8px;
+  padding:8px 20px; margin-bottom:24px;
+  font-family:'Orbitron'; font-size:.82rem; color:var(--neon);
+}
+.float-icon { font-size:3rem; animation:floatY 3s ease-in-out infinite; filter:drop-shadow(0 0 10px var(--neon)); margin:14px 0; }
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* Chapter card */
+#scr-chapter {
+  background:radial-gradient(ellipse at center, #0c0c22 0%, var(--bg) 70%);
+}
+.ch-num { font-family:'Share Tech Mono'; color:var(--neon); letter-spacing:4px; font-size:.8rem; margin-bottom:10px; }
+.ch-title { font-family:'Orbitron'; font-size:clamp(1.6rem,4vw,3rem); font-weight:900; color:#fff; margin-bottom:14px; }
+.ch-sub { color:var(--dim); max-width:500px; line-height:1.7; margin-bottom:30px; font-size:.92rem; }
+
+/* Shop screen */
+#scr-shop {
+  background:radial-gradient(ellipse at 50% 40%, #0a0a28 0%, var(--bg) 70%);
+  overflow-y:auto;
+}
+.shop-title { font-family:'Orbitron'; font-size:clamp(1.4rem,3vw,2.2rem); font-weight:900; margin-bottom:4px; }
+.shop-sub { font-size:.88rem; color:var(--dim); margin-bottom:6px; }
+.shop-wallet {
+  font-family:'Orbitron'; font-size:1.4rem; color:var(--gold);
+  margin-bottom:22px;
+}
+.shop-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
+  gap:16px; max-width:900px; width:100%; margin:0 auto 24px;
+}
+.shop-item {
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:18px; text-align:center; transition:all .2s; cursor:pointer;
+  position:relative; overflow:hidden;
+}
+.shop-item:hover:not(.bought):not(.cant) {
+  border-color:var(--neon); transform:translateY(-2px); box-shadow:0 0 18px rgba(0,245,255,.15);
+}
+.shop-item.bought {
+  border-color:rgba(0,255,136,.3); background:rgba(0,255,136,.04); cursor:default;
+}
+.shop-item.cant { opacity:.45; cursor:not-allowed; }
+.shop-item .si-icon { font-size:2.4rem; margin-bottom:8px; }
+.shop-item .si-name { font-family:'Orbitron'; font-size:.72rem; color:#fff; margin-bottom:6px; font-weight:700; letter-spacing:.5px; }
+.shop-item .si-desc { font-size:.72rem; color:var(--dim); margin-bottom:10px; line-height:1.4; }
+.shop-item .si-price { font-family:'Share Tech Mono'; font-size:.88rem; color:var(--gold); }
+.shop-item.bought .si-price { color:var(--success); }
+.shop-item .si-tier { position:absolute; top:8px; right:10px; font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px; }
+.tier-b1 { color:rgba(0,245,255,.6); }
+.tier-b2 { color:rgba(255,0,170,.6); }
+.tier-b3 { color:var(--gold); }
+.shop-buy-btn {
+  display:inline-block; margin-top:6px; padding:6px 16px;
+  border:1px solid var(--neon); border-radius:4px; color:var(--neon);
+  font-family:'Orbitron'; font-size:.65rem; cursor:pointer;
+  background:transparent; transition:all .2s;
+}
+.shop-buy-btn:hover { background:var(--neon); color:var(--bg); }
+.shop-item.cant .shop-buy-btn { pointer-events:none; border-color:var(--dim); color:var(--dim); }
+.shop-bought-badge { color:var(--success); font-family:'Orbitron'; font-size:.65rem; margin-top:6px; }
+
+/* Reward/Success popup */
+#scr-reward {
+  background:rgba(6,6,15,.92);
+}
+.rew-icon { font-size:4rem; margin:14px 0; }
+.rew-title { font-family:'Orbitron'; font-size:1.6rem; font-weight:900; margin-bottom:8px; }
+.rew-sub { color:var(--dim); max-width:420px; line-height:1.6; margin-bottom:10px; font-size:.9rem; }
+.rew-earn { font-family:'Share Tech Mono'; font-size:1.3rem; color:var(--gold); margin-bottom:6px; }
+.rew-penalty { font-family:'Share Tech Mono'; font-size:.82rem; color:var(--danger); margin-bottom:20px; }
+
+/* Final screen */
+#scr-final { background:radial-gradient(ellipse at 50% 30%, #0c0c22 0%, var(--bg) 70%); }
+.final-stats { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:18px 0; }
+.fs-stat { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px 24px; }
+.fs-val { font-family:'Orbitron'; font-size:1.4rem; color:var(--gold); }
+.fs-lbl { font-size:.7rem; color:var(--dim); letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
+.know-card { background:var(--card); border:1px solid rgba(0,245,255,.2); border-radius:8px; padding:18px; max-width:680px; margin:16px auto; text-align:left; }
+.know-card h3 { font-family:'Orbitron'; font-size:.8rem; color:var(--neon); letter-spacing:2px; margin-bottom:10px; }
+.know-card ul { list-style:none; }
+.know-card ul li { padding:5px 0; font-size:.84rem; border-bottom:1px solid var(--border); display:flex; gap:8px; }
+.know-card ul li::before { content:'▸'; color:var(--neon); flex-shrink:0; }
+
+/* BUTTONS */
+.btn {
+  display:inline-block; padding:12px 32px;
+  font-family:'Orbitron'; font-size:.82rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:2px;
+  border:2px solid; border-radius:4px; cursor:pointer;
+  transition:all .2s; background:transparent;
+}
+.btn-neon { border-color:var(--neon); color:var(--neon); }
+.btn-neon:hover { background:var(--neon); color:var(--bg); box-shadow:0 0 20px var(--neon); }
+.btn-gold { border-color:var(--gold); color:var(--gold); }
+.btn-gold:hover { background:var(--gold); color:var(--bg); box-shadow:0 0 20px var(--gold); }
+.btn-pink { border-color:var(--neon2); color:var(--neon2); }
+.btn-pink:hover { background:var(--neon2); color:#fff; }
+.btn-green { border-color:var(--success); color:var(--success); }
+.btn-green:hover { background:var(--success); color:var(--bg); }
+.btn-lg { padding:16px 48px; font-size:.95rem; }
+.btn-sm { padding:7px 18px; font-size:.7rem; }
+
+/* Shop walk-in animation overlay */
+#shop-walk-canvas {
+  position:absolute; inset:0; pointer-events:none; z-index:5;
+}
+
+/* Inventory bar (bottom of shop) */
+.inventory-bar {
+  display:flex; gap:10px; flex-wrap:wrap; justify-content:center;
+  max-width:900px; margin:0 auto 6px; padding:10px 0;
+  border-top:1px solid var(--border);
+}
+.inv-item {
+  display:flex; align-items:center; gap:6px;
+  background:rgba(0,245,255,.05); border:1px solid rgba(0,245,255,.2);
+  border-radius:20px; padding:5px 12px; font-size:.75rem;
+}
+
+/* XP progress in HUD */
+.xp-mini-bar { width:60px; height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+.xp-mini-fill { height:100%; background:linear-gradient(90deg,var(--neon),var(--neon2)); transition:width .4s; }
+
+@media(max-width:600px){
+  .qp-row-top{flex-direction:column;}
+  .concept-card{flex:none;width:100%;}
+  .dd-cols{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div id="root">
+
+<!-- ══ CANVAS (always in background) ══ -->
+<canvas id="scene-canvas"></canvas>
+
+<!-- ══ HUD ══ -->
+<div id="hud" style="display:none">
+  <div class="hud-seg">
+    <span class="hud-label">Analist</span>
+    <span class="hud-val" id="h-title">Stajyer</span>
+  </div>
+  <div class="hud-seg">
+    <span class="hud-label">Bakiye</span>
+    <span class="hud-val gold" id="h-money">₺0</span>
+  </div>
+  <div class="hud-seg">
+    <span class="hud-label">XP</span>
+    <span class="hud-val pink" id="h-xp">0</span>
+    <div class="xp-mini-bar"><div class="xp-mini-fill" id="h-xpbar" style="width:0%"></div></div>
+  </div>
+  <div class="hud-seg">
+    <span class="hud-label">Bölüm</span>
+    <span class="hud-val" id="h-chap">1 / 3</span>
+  </div>
+  <div class="hud-seg">
+    <span class="hud-label">Görev</span>
+    <span class="hud-val" id="h-mission">1 / 3</span>
+  </div>
+  <div class="hud-seg" style="margin-left:auto">
+    <button class="btn btn-sm btn-neon" style="padding:4px 12px;font-size:.6rem" onclick="showGuide()">📖 Kılavuz</button>
+  </div>
+</div>
+
+<!-- ══ SPEECH ══ -->
+<div id="speech-wrap">
+  <div class="speech-bubble" id="speech-bubble">
+    <div class="speech-spk" id="speech-spk">NPC</div>
+    <div class="speech-txt" id="speech-txt"></div>
+  </div>
+</div>
+<button id="skip-btn" onclick="skipScene()" style="display:none">ATLA ▶▶</button>
+
+<!-- ══ QUESTION PANEL ══ -->
+<div id="question-panel">
+  <div class="qp-inner">
+    <div class="qp-row-top">
+      <div class="concept-card" id="concept-card" style="display:none">
+        <div class="cc-title" id="cc-title"></div>
+        <div class="cc-body" id="cc-body"></div>
+      </div>
+      <div class="question-main">
+        <div class="q-label" id="q-label">GÖREV</div>
+        <div class="q-reward-bar">
+          <span class="reward-pot" id="q-pot">₺0</span>
+          <span class="reward-pot-label">kazanabilirsiniz</span>
+        </div>
+        <div class="penalty-row" id="penalty-row"></div>
+        <div class="hint-box" id="hint-box" style="display:none"></div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+    </div>
+    <div id="interact-area"></div>
+    <div class="fb-box" id="fb-box"></div>
+    <div class="action-row" id="action-row"></div>
+  </div>
+</div>
+
+<!-- ══ FULLSCREEN LAYERS ══ -->
+
+<!-- Title -->
+<div class="fs-layer show" id="scr-title">
+  <div class="tl-sub">▸ Sistem Analiz ve Tasarım ◂</div>
+  <h1>SHADOW<br><span>ANALYST</span></h1>
+  <div class="tl-tag">The Use Case Detective</div>
+  <div class="float-icon">🕵️</div>
+  <div class="badge">🎓 User Stories &amp; Use Cases</div>
+  <p style="max-width:440px;color:var(--dim);font-size:.88rem;line-height:1.7;margin-bottom:26px;text-align:center">
+    Mezun oldun, küçük ofisin var. Müşteri sorularını çöz, para kazan,<br>
+    Teknoloji Market'ten ekipman al, Gölge Analist ol.
+  </p>
+  <button class="btn btn-neon btn-lg" onclick="startGame()">▶ OYUNA BAŞLA</button>
+  <div style="margin-top:14px">
+    <button class="btn btn-sm" style="border-color:var(--dim);color:var(--dim)" onclick="showGuide()">📖 Kavram Kılavuzu</button>
+  </div>
+</div>
+
+<!-- Guide overlay (on top of title or game) -->
+<div class="fs-layer" id="scr-guide" style="background:rgba(6,6,15,.95);z-index:500">
+  <h2 style="font-family:Orbitron;color:var(--neon);margin-bottom:20px">📖 KAVRAM KILAVUZU</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;max-width:800px;width:100%;text-align:left;margin-bottom:28px">
+    <div class="concept-card"><div class="cc-title">🎭 Actor</div><div class="cc-body">Sistemi kullanan kişi, rol veya harici sistem.<br>"<span style="color:var(--neon)">Kim kullanıyor?</span>"</div></div>
+    <div class="concept-card"><div class="cc-title">📋 Use Case</div><div class="cc-body">Aktörün sistemde yaptığı eylem/amaç.<br>"<span style="color:var(--neon)">Ne yapıyor?</span>"</div></div>
+    <div class="concept-card"><div class="cc-title">📝 User Story</div><div class="cc-body" style="color:var(--neon2);font-family:'Share Tech Mono';font-size:.75rem">"Bir [Aktör] olarak,<br>[Eylem] istiyorum,<br>böylece [Fayda]."</div></div>
+    <div class="concept-card"><div class="cc-title">🔗 &lt;&lt;include&gt;&gt;</div><div class="cc-body">Zorunlu bağımlılık.<br>Her çalışmada tetiklenir.</div></div>
+    <div class="concept-card"><div class="cc-title">🔀 &lt;&lt;extend&gt;&gt;</div><div class="cc-body">Opsiyonel genişletme.<br>Koşul sağlandığında devreye girer.</div></div>
+  </div>
+  <button class="btn btn-neon" onclick="closeGuide()">ANLADIM ✓</button>
+</div>
+
+<!-- Chapter transition -->
+<div class="fs-layer" id="scr-chapter" style="z-index:300">
+  <div class="ch-num" id="ch-num"></div>
+  <div class="ch-title" id="ch-title"></div>
+  <div class="ch-sub" id="ch-sub"></div>
+  <button class="btn btn-neon" onclick="dismissChapter()">DEVAM ET →</button>
+</div>
+
+<!-- Shop screen -->
+<div class="fs-layer" id="scr-shop" style="z-index:350;justify-content:flex-start;padding-top:60px;overflow-y:auto">
+  <canvas id="shop-walk-canvas"></canvas>
+  <div style="text-align:center;margin-bottom:24px;z-index:10;position:relative">
+    <div style="font-family:'Share Tech Mono';color:var(--neon);letter-spacing:3px;font-size:.75rem;margin-bottom:6px">TEKNOLOJİ MARKET</div>
+    <div class="shop-title" id="shop-chapter-title" style="color:var(--neon2)">BÖLÜM SONU ALIŞVERİŞİ</div>
+    <div class="shop-sub">Bu bölümde kazandığın parayla ekipman satın alabilirsin!</div>
+    <div class="shop-wallet">
+      💰 Mevcut Bakiye: <span id="shop-wallet-val" style="color:var(--gold)">₺0</span>
+    </div>
+  </div>
+  <div class="shop-grid" id="shop-grid" style="z-index:10;position:relative"></div>
+  <div style="text-align:center;margin-bottom:10px;z-index:10;position:relative">
+    <div style="font-family:'Orbitron';font-size:.68rem;color:var(--dim);letter-spacing:2px;margin-bottom:10px">SATINALDIKLARIM</div>
+    <div class="inventory-bar" id="inventory-bar"><span style="color:var(--dim);font-size:.78rem">Henüz alım yok</span></div>
+  </div>
+  <button class="btn btn-neon" onclick="closeShop()" style="margin-bottom:30px;z-index:10;position:relative">DEVAM ET →</button>
+</div>
+
+<!-- Reward popup (between questions) -->
+<div class="fs-layer" id="scr-reward" style="z-index:320">
+  <div class="rew-icon" id="rew-icon">🏆</div>
+  <div class="rew-title" id="rew-title">GÖREV TAMAMLANDI!</div>
+  <div class="rew-sub" id="rew-sub"></div>
+  <div class="rew-earn" id="rew-earn"></div>
+  <div class="rew-penalty" id="rew-penalty"></div>
+  <button class="btn btn-gold" id="rew-btn" onclick="nextStep()">SONRAKI →</button>
+</div>
+
+<!-- Final screen -->
+<div class="fs-layer" id="scr-final" style="z-index:400;overflow-y:auto;padding-top:40px">
+  <div class="ch-num">TEBRIKLER — OYUN BİTTİ</div>
+  <h1 style="font-family:Orbitron;font-size:clamp(1.4rem,4vw,2.4rem);font-weight:900;margin-bottom:14px">
+    <span style="color:var(--neon2)">GÖLGE ANALİST</span><br>
+    <span style="color:var(--neon)">OLARAK YETİŞTİN</span>
+  </h1>
+  <div class="float-icon">🧑‍💻</div>
+  <div class="final-stats" id="final-stats"></div>
+  <div class="know-card">
+    <h3>🎓 ÖĞRENDİKLERİN</h3>
+    <ul>
+      <li>Actor: Sistemi kullanan kişi, rol veya harici sistem</li>
+      <li>Use Case: Aktörün sistemde gerçekleştirdiği amaç/eylem</li>
+      <li>User Story: "Bir [Aktör] olarak, [Eylem] istiyorum, böylece [Fayda]"</li>
+      <li>&lt;&lt;include&gt;&gt;: Zorunlu bağımlılık — her zaman çalışır</li>
+      <li>&lt;&lt;extend&gt;&gt;: Opsiyonel genişletme — koşullu devreye girer</li>
+      <li>Use Case Diyagramı: Aktörler, oval use case'ler ve ilişki okları</li>
+    </ul>
+  </div>
+  <div id="final-inventory" style="margin:10px 0"></div>
+  <div style="margin-top:24px"><button class="btn btn-neon btn-lg" onclick="restartGame()">🔄 TEKRAR OYNA</button></div>
+</div>
+
+</div><!-- end #root -->
+
+<script>
+// ══════════════════════════════════════════
+//  CANVAS 2D ENGINE
+// ══════════════════════════════════════════
+const CV = document.getElementById('scene-canvas');
+const cx = CV.getContext('2d');
+let CW, CH;
+
+function resizeCv() {
+  CW = CV.offsetWidth; CH = CV.offsetHeight;
+  CV.width = CW; CV.height = CH;
+}
+window.addEventListener('resize', () => { resizeCv(); if(animSt.bg >= 0) drawBg(animSt.bg); });
+
+// ── ROOM BACKGROUNDS ──
+function drawBg(idx) {
+  cx.clearRect(0,0,CW,CH);
+  [drawRoom0, drawRoom1, drawRoom2][Math.min(idx,2)](cx, CW, CH);
+}
+
+function drawRoom0(g,W,H){
+  const wg=g.createLinearGradient(0,0,0,H);wg.addColorStop(0,'#130e22');wg.addColorStop(1,'#090614');
+  g.fillStyle=wg;g.fillRect(0,0,W,H);
+  g.fillStyle='#0e0a18';g.fillRect(0,H*.66,W,H*.34);
+  g.fillStyle='#1c1332';g.fillRect(0,H*.655,W,4);
+  for(let x=0;x<W;x+=52){g.strokeStyle='rgba(80,50,140,.1)';g.lineWidth=1;g.beginPath();g.moveTo(x,H*.66);g.lineTo(x,H);g.stroke();}
+  // window
+  g.fillStyle='#081420';g.fillRect(W*.04,H*.07,W*.14,H*.35);
+  g.strokeStyle='#261c40';g.lineWidth=2.5;g.strokeRect(W*.04,H*.07,W*.14,H*.35);
+  g.fillStyle='rgba(0,50,120,.12)';g.fillRect(W*.04,H*.07,W*.14,H*.35);
+  g.strokeStyle='#261c40';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(W*.11,H*.07);g.lineTo(W*.11,H*.42);g.stroke();
+  g.beginPath();g.moveTo(W*.04,H*.245);g.lineTo(W*.18,H*.245);g.stroke();
+  [[W*.06,H*.1],[W*.09,H*.08],[W*.15,H*.13],[W*.07,H*.2]].forEach(([sx,sy])=>{g.fillStyle='rgba(180,180,255,.5)';g.beginPath();g.arc(sx,sy,1.2,0,Math.PI*2);g.fill();});
+  // desk
+  g.fillStyle='#1e1509';g.fillRect(W*.22,H*.53,W*.5,H*.13);
+  g.fillStyle='#2e200e';g.fillRect(W*.22,H*.53,W*.5,4);
+  // single monitor
+  g.fillStyle='#111';g.fillRect(W*.34,H*.32,W*.13,H*.21);
+  g.fillStyle='#081828';g.fillRect(W*.35,H*.33,W*.11,H*.18);
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=14;g.fillStyle='rgba(0,200,255,.16)';g.fillRect(W*.35,H*.33,W*.11,H*.18);g.restore();
+  g.fillStyle='#181818';g.fillRect(W*.395,H*.53,W*.022,H*.03);
+  // coffee mug
+  g.fillStyle='#e0e0e0';g.fillRect(W*.67,H*.5,W*.024,H*.04);
+  g.fillStyle='#5a3010';g.fillRect(W*.672,H*.51,W*.02,H*.025);
+  // plant
+  g.fillStyle='#1c1000';g.fillRect(W*.79,H*.55,W*.034,H*.1);
+  g.fillStyle='#1a4010';g.beginPath();g.arc(W*.807,H*.49,W*.024,0,Math.PI*2);g.fill();
+  g.fillStyle='#2a6020';g.beginPath();g.arc(W*.802,H*.47,W*.016,0,Math.PI*2);g.fill();
+  // neon sign
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=18;
+  g.strokeStyle='#00f5ff';g.lineWidth=1.5;g.strokeRect(W*.85,H*.08,W*.12,H*.2);
+  g.fillStyle='rgba(0,245,255,.05)';g.fillRect(W*.85,H*.08,W*.12,H*.2);
+  g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#00f5ff';g.textAlign='center';
+  g.fillText('SYS',W*.91,H*.18);g.fillText('PRO',W*.91,H*.265);g.restore();
+}
+
+function drawRoom1(g,W,H){
+  const wg=g.createLinearGradient(0,0,0,H);wg.addColorStop(0,'#06050d');wg.addColorStop(1,'#030207');
+  g.fillStyle=wg;g.fillRect(0,0,W,H);
+  g.fillStyle='#0b0916';g.fillRect(0,H*.66,W,H*.34);
+  g.fillStyle='#14082a';g.fillRect(0,H*.655,W,4);
+  for(let x=0;x<W;x+=52){g.strokeStyle='rgba(255,0,170,.05)';g.lineWidth=1;g.beginPath();g.moveTo(x,H*.66);g.lineTo(x,H);g.stroke();}
+  // rainy window
+  g.fillStyle='#070c16';g.fillRect(W*.03,H*.05,W*.16,H*.38);
+  g.strokeStyle='#15183a';g.lineWidth=2.5;g.strokeRect(W*.03,H*.05,W*.16,H*.38);
+  for(let i=0;i<10;i++){const rx=W*.04+i*W*.014;g.strokeStyle='rgba(70,90,180,.2)';g.lineWidth=1;g.beginPath();g.moveTo(rx,H*.06);g.lineTo(rx-3,H*.41);g.stroke();}
+  // desk
+  g.fillStyle='#100c06';g.fillRect(W*.21,H*.52,W*.54,H*.14);g.fillStyle='#1a1208';g.fillRect(W*.21,H*.52,W*.54,4);
+  // dual monitors
+  [W*.27,W*.42].forEach(mx=>{
+    g.fillStyle='#0c0c0c';g.fillRect(mx,H*.3,W*.12,H*.22);
+    g.fillStyle='#06101a';g.fillRect(mx+W*.006,H*.31,W*.108,H*.19);
+    g.save();g.shadowColor='#ff00aa';g.shadowBlur=12;g.fillStyle='rgba(255,0,170,.12)';g.fillRect(mx+W*.006,H*.31,W*.108,H*.19);g.restore();
+    g.fillStyle='#181818';g.fillRect(mx+W*.044,H*.52,W*.022,H*.03);
+  });
+  // keyboard
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=8;g.fillStyle='#102030';g.fillRect(W*.28,H*.56,W*.22,H*.06);g.restore();
+  // speaker
+  g.fillStyle='#181818';g.fillRect(W*.68,H*.36,W*.04,H*.16);
+  g.strokeStyle='rgba(0,245,255,.28)';g.lineWidth=1;for(let i=0;i<4;i++)g.strokeRect(W*.683,H*.38+i*H*.03,W*.034,H*.024);
+  // neon shelf
+  g.save();g.shadowColor='#8800ff';g.shadowBlur=18;g.fillStyle='rgba(136,0,255,.3)';g.fillRect(W*.77,H*.51,W*.1,3);g.restore();
+  // bigger neon sign
+  g.save();g.shadowColor='#ff00aa';g.shadowBlur=24;
+  g.strokeStyle='#ff00aa';g.lineWidth=1.5;g.strokeRect(W*.85,H*.07,W*.12,H*.22);
+  g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#ff00aa';g.textAlign='center';
+  g.fillText('SYS',W*.91,H*.18);g.fillText('PRO',W*.91,H*.275);g.restore();
+}
+
+function drawRoom2(g,W,H){
+  const wg=g.createLinearGradient(0,0,0,H);wg.addColorStop(0,'#030310');wg.addColorStop(1,'#020206');
+  g.fillStyle=wg;g.fillRect(0,0,W,H);
+  g.fillStyle='#070718';g.fillRect(0,H*.66,W,H*.34);
+  // glowing floor grid
+  for(let x=0;x<W;x+=52){
+    const tg=g.createLinearGradient(x,H*.66,x,H);tg.addColorStop(0,'rgba(0,245,255,.12)');tg.addColorStop(1,'transparent');
+    g.fillStyle=tg;g.fillRect(x,H*.66,1.5,H*.34);
+  }
+  // mega desk
+  g.fillStyle='#07070f';g.fillRect(W*.1,H*.51,W*.66,H*.15);
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=16;g.fillStyle='rgba(0,245,255,.2)';g.fillRect(W*.1,H*.51,W*.66,2.5);g.restore();
+  // triple monitors
+  [[W*.14,'#00f5ff'],[W*.28,'#ff00aa'],[W*.42,'#aaff00']].forEach(([mx,c])=>{
+    g.fillStyle='#0a0a0a';g.fillRect(mx,H*.25,W*.11,H*.26);
+    g.save();g.shadowColor=c;g.shadowBlur=20;
+    g.fillStyle=c+'20';g.fillRect(mx+W*.006,H*.26,W*.098,H*.23);
+    g.strokeStyle=c+'55';g.lineWidth=1;g.strokeRect(mx+W*.006,H*.26,W*.098,H*.23);
+    g.restore();
+    g.fillStyle='#181818';g.fillRect(mx+W*.036,H*.51,W*.022,H*.03);
+  });
+  // RGB floor strip
+  const rg=g.createLinearGradient(0,0,W,0);rg.addColorStop(0,'#ff0080');rg.addColorStop(.33,'#00f5ff');rg.addColorStop(.66,'#aaff00');rg.addColorStop(1,'#ff0080');
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=14;g.fillStyle=rg;g.fillRect(0,H*.648,W,4);g.restore();
+  // hologram ring
+  g.save();g.shadowColor='#aaff00';g.shadowBlur=22;g.strokeStyle='rgba(170,255,0,.5)';g.lineWidth=1.5;g.setLineDash([5,5]);g.beginPath();g.arc(W*.88,H*.36,H*.2,0,Math.PI*2);g.stroke();g.setLineDash([]);g.restore();
+  // wall accent
+  g.save();g.shadowColor='#ff00aa';g.shadowBlur=14;g.strokeStyle='rgba(255,0,170,.28)';g.lineWidth=1;g.beginPath();g.moveTo(W*.8,0);g.lineTo(W*.8,H*.66);g.stroke();g.restore();
+  // big neon sign
+  g.save();g.shadowColor='#aaff00';g.shadowBlur=24;
+  g.strokeStyle='#aaff00';g.lineWidth=1.5;g.strokeRect(W*.84,H*.06,W*.13,H*.22);
+  g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#aaff00';g.textAlign='center';
+  g.fillText('SYS',W*.905,H*.17);g.fillText('PRO',W*.905,H*.26);g.restore();
+}
+
+// ── PIXEL CHARACTERS ──
+function drawChar(g, x, y, size, role, facingLeft, frame, isWalking) {
+  g.save();
+  if(facingLeft){g.translate(x,0);g.scale(-1,1);g.translate(-x,0);}
+  const s=size, bob=Math.sin(frame*.18)*1.5;
+  const legA=isWalking?Math.sin(frame*.38)*11:Math.sin(frame*.07)*2;
+  const armA=isWalking?Math.sin(frame*.38)*14:Math.sin(frame*.07)*3;
+
+  // shadow
+  g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(x,y+s*.93,s*.34,s*.07,0,0,Math.PI*2);g.fill();
+  // legs
+  const lc={mimar:'#0a0a16',player:'#081626',baker:'#4a2200',librarian:'#162240',gym:'#082414'}[role]||'#101020';
+  g.fillStyle=lc;
+  [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.1,y+s*.44+bob);g.rotate(-side*legA*Math.PI/180);g.fillRect(-s*.08,0,s*.16,s*.39);g.restore();});
+  // shoes
+  [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.1,y+s*.83+bob);g.rotate(-side*legA*Math.PI/180);g.fillStyle='#080606';g.fillRect(-s*.1,-s*.04,s*.22,s*.1);g.restore();});
+  // body
+  const bc={mimar:'#0c0c1c',player:'#081626',baker:'#eeeeff',librarian:'#1a3a90',gym:'#186230'}[role]||'#101020';
+  g.fillStyle=bc;g.fillRect(x-s*.22,y-s*.06+bob,s*.44,s*.5);
+  g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x-s*.18,y-s*.03+bob,s*.36,s*.18);
+  // arms
+  g.fillStyle=bc;
+  [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.28,y+s*.04+bob);g.rotate(-side*armA*Math.PI/180);g.fillRect(-s*.08,0,s*.16,s*.3);g.restore();});
+  // head
+  const sk={mimar:'#c09070',player:'#deb890',baker:'#f5c090',librarian:'#e0c070',gym:'#d0a870'}[role]||'#e0b888';
+  g.fillStyle=sk;g.fillRect(x-s*.18,y-s*.38+bob,s*.36,s*.32);
+  // eyes
+  g.fillStyle='#1a1a1a';g.fillRect(x-s*.1,y-s*.28+bob,s*.06,s*.066);g.fillRect(x+s*.04,y-s*.28+bob,s*.06,s*.066);
+  g.fillStyle='#fff';g.fillRect(x-s*.09,y-s*.27+bob,s*.024,s*.024);g.fillRect(x+s*.05,y-s*.27+bob,s*.024,s*.024);
+  g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.2;g.beginPath();g.arc(x,y-s*.16+bob,s*.055,.2,Math.PI-.2);g.stroke();
+
+  if(role==='baker'){
+    g.fillStyle='#fff';g.fillRect(x-s*.18,y-s*.55+bob,s*.36,s*.05);
+    g.fillStyle='#fff';g.beginPath();g.arc(x,y-s*.61+bob,s*.16,Math.PI,0);g.fill();g.beginPath();g.arc(x,y-s*.61+bob,s*.16,0,Math.PI);g.fill();
+    g.fillStyle='rgba(220,220,220,.3)';g.fillRect(x-s*.06,y-s*.73+bob,s*.04,s*.19);
+  } else if(role==='librarian'){
+    g.fillStyle='#162060';g.fillRect(x-s*.2,y-s*.59+bob,s*.4,s*.05);
+    g.fillStyle='#162060';g.beginPath();g.arc(x,y-s*.65+bob,s*.13,0,Math.PI*2);g.fill();
+    g.strokeStyle='#4a4a4a';g.lineWidth=1.5;
+    g.strokeRect(x-s*.13,y-s*.285+bob,s*.09,s*.07);g.strokeRect(x+s*.04,y-s*.285+bob,s*.09,s*.07);
+    g.beginPath();g.moveTo(x-s*.04,y-s*.25+bob);g.lineTo(x+s*.04,y-s*.25+bob);g.stroke();
+  } else if(role==='gym'){
+    g.fillStyle='#0e3c18';g.fillRect(x-s*.2,y-s*.53+bob,s*.4,s*.05);
+    g.fillStyle='#0e3c18';g.fillRect(x-s*.15,y-s*.8+bob,s*.3,s*.28);
+    g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x-s*.08,y-s*.76+bob,s*.06,s*.2);
+  } else if(role==='mimar'){
+    g.fillStyle='#070707';g.fillRect(x-s*.22,y-s*.57+bob,s*.44,s*.06);
+    g.fillStyle='#0d0d0d';g.fillRect(x-s*.15,y-s*.87+bob,s*.3,s*.31);
+    g.fillStyle='rgba(255,255,255,.04)';g.fillRect(x-s*.1,y-s*.83+bob,s*.05,s*.23);
+    g.save();g.globalAlpha=.14;g.fillStyle='#8800ff';g.beginPath();g.arc(x,y+bob,s*.58,0,Math.PI*2);g.fill();g.restore();
+    g.fillStyle='rgba(0,0,0,.5)';g.fillRect(x-s*.18,y-s*.38+bob,s*.36,s*.14);
+  } else { // player
+    g.fillStyle='#051c2c';g.fillRect(x-s*.21,y-s*.49+bob,s*.42,s*.06);
+    g.fillStyle='#051c2c';g.fillRect(x-s*.16,y-s*.77+bob,s*.32,s*.29);
+    g.fillStyle='#083a54';g.fillRect(x+s*.07,y-s*.5+bob,s*.14,s*.05);
+    g.strokeStyle='#00f5ff';g.lineWidth=1.5;g.beginPath();g.arc(x,y-s*.53+bob,s*.22,Math.PI,0);g.stroke();
+    g.fillStyle='#00f5ff';g.fillRect(x-s*.225,y-s*.535+bob,s*.05,s*.08);g.fillRect(x+s*.175,y-s*.535+bob,s*.05,s*.08);
+  }
+  g.restore();
+}
+
+// ── ANIM STATE ──
+const animSt = {
+  bg:-1, npc:'baker', frame:0, phase:'idle',
+  npcX:0, npcTX:0, npcY:0, playerX:0, playerY:0,
+  lines:[], lineIdx:0, idleTimer:0,
+  typed:'', full:'', typeTimer:0,
+  rafId:null, cb:null
+};
+
+function startScene(bgIdx, npcKey, lines, cb) {
+  cancelAnimationFrame(animSt.rafId);
+  animSt.bg=bgIdx; animSt.npc=npcKey;
+  animSt.frame=0; animSt.phase='walk_in';
+  animSt.npcX=-80; animSt.npcTX=CW*.6; animSt.npcY=CH*.58;
+  animSt.playerX=CW*.32; animSt.playerY=CH*.58;
+  animSt.lines=lines; animSt.lineIdx=0; animSt.idleTimer=0;
+  animSt.typed=''; animSt.full=''; animSt.typeTimer=0;
+  animSt.cb=cb;
+  hideSpeech();
+  document.getElementById('skip-btn').style.display='block';
+  animLoop();
+}
+
+function animLoop() {
+  animSt.frame++;
+  const st=animSt, walk=st.phase==='walk_in'||st.phase==='walk_out';
+  drawBg(st.bg);
+  drawChar(cx, st.playerX, st.playerY, Math.round(CH*.22), 'player', true, st.frame, false);
+
+  if(st.phase==='walk_in'){
+    st.npcX=Math.min(st.npcX+3.6, st.npcTX);
+    drawChar(cx, st.npcX, st.npcY, Math.round(CH*.22), st.npc, false, st.frame, true);
+    if(st.npcX>=st.npcTX){st.phase='talk';beginLine();}
+  } else if(st.phase==='talk'){
+    drawChar(cx, st.npcX, st.npcY, Math.round(CH*.22), st.npc, false, st.frame, false);
+    st.typeTimer++;
+    if(st.typeTimer%2===0 && st.typed.length<st.full.length){
+      st.typed=st.full.slice(0,st.typed.length+1);
+      document.getElementById('speech-txt').textContent=st.typed;
+    }
+    if(st.typed.length>=st.full.length){
+      st.idleTimer++;
+      if(st.idleTimer>90){
+        st.lineIdx++;
+        if(st.lineIdx<st.lines.length) beginLine();
+        else {st.phase='walk_out';hideSpeech();}
+      }
+    }
+  } else if(st.phase==='walk_out'){
+    st.npcX-=3.4;
+    drawChar(cx, st.npcX, st.npcY, Math.round(CH*.22), st.npc, true, st.frame, true);
+    if(st.npcX<-100){
+      document.getElementById('skip-btn').style.display='none';
+      if(st.cb) st.cb();
+      return;
+    }
+  }
+  animSt.rafId=requestAnimationFrame(animLoop);
+}
+
+function beginLine(){
+  const ln=animSt.lines[animSt.lineIdx];
+  animSt.full=ln.text; animSt.typed=''; animSt.typeTimer=0; animSt.idleTimer=0;
+  const b=document.getElementById('speech-bubble');
+  document.getElementById('speech-spk').textContent=ln.speaker||'';
+  document.getElementById('speech-spk').style.color=ln.color||'#00f5ff';
+  document.getElementById('speech-txt').textContent='';
+  if(ln.dark) b.classList.add('dark'); else b.classList.remove('dark');
+  document.getElementById('speech-wrap').classList.add('show');
+}
+function hideSpeech(){document.getElementById('speech-wrap').classList.remove('show');}
+function skipScene(){
+  cancelAnimationFrame(animSt.rafId);
+  hideSpeech();
+  document.getElementById('skip-btn').style.display='none';
+  if(animSt.cb) animSt.cb();
+}
+
+// Shop walk animation
+const shopCV = document.getElementById('shop-walk-canvas');
+const shopCx = shopCV.getContext('2d');
+let shopAnimId=null, shopFrame=0, shopCharX=-100;
+
+function startShopWalk(cb){
+  shopFrame=0; shopCharX=-100;
+  shopCV.width=window.innerWidth; shopCV.height=window.innerHeight;
+  shopCV.style.position='absolute'; shopCV.style.inset='0';
+  function loop(){
+    shopCx.clearRect(0,0,shopCV.width,shopCV.height);
+    shopCharX+=4;
+    shopFrame++;
+    drawChar(shopCx, shopCharX, shopCV.height*.82, Math.round(shopCV.height*.2), 'player', false, shopFrame, true);
+    if(shopCharX>shopCV.width*.45){
+      shopCx.clearRect(0,0,shopCV.width,shopCV.height);
+      if(cb) cb();
+      return;
+    }
+    shopAnimId=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+// ══════════════════════════════════════════
+//  GAME DATA
+// ══════════════════════════════════════════
+const SHOP_ITEMS = [
+  // BÖLÜM 1 items
+  { id:'headphones', name:'Gamer Kulaklık', icon:'🎧', price:400, desc:'Süper ses kalitesi. Konsantrasyon +20.', tier:1, tierLabel:'B1' },
+  { id:'mousepad',   name:'RGB Mousepad',   icon:'🖱️', price:600, desc:'Büyük format, neon kenarlıklı.', tier:1, tierLabel:'B1' },
+  { id:'keyboard',   name:'Mekanik Klavye', icon:'⌨️', price:900, desc:'Blue switch, RGB aydınlatmalı.', tier:1, tierLabel:'B1' },
+  { id:'webcam',     name:'4K Webcam',      icon:'📷', price:700, desc:'Sunum için kristal netliğinde görüntü.', tier:1, tierLabel:'B1' },
+  // BÖLÜM 2 items
+  { id:'monitor2',   name:'Çift Monitör',   icon:'🖥️', price:2200, desc:'Yan yana iki ekran. Analiz alanı iki katına çıkar.', tier:2, tierLabel:'B2' },
+  { id:'chair',      name:'Ergonomik Sandalye', icon:'🪑', price:1800, desc:'Sırt desteğiyle 12 saatlik çalışma seansı.', tier:2, tierLabel:'B2' },
+  { id:'speaker',    name:'5+1 Ses Sistemi', icon:'🔊', price:2500, desc:'Ofisi konser salonuna çevirir.', tier:2, tierLabel:'B2' },
+  { id:'light',      name:'LED Pano Işığı',  icon:'💡', price:1500, desc:'Masanın kenarına özel neon ışık.', tier:2, tierLabel:'B2' },
+  // BÖLÜM 3 items
+  { id:'monitor3',   name:'Üçlü Monitör Seti', icon:'📺', price:6000, desc:'Üç ekran. Gölge Analist\'e yakışır kurulum.', tier:3, tierLabel:'B3' },
+  { id:'server',     name:'Kişisel Sunucu',  icon:'🖧',  price:8000, desc:'Ev sunucusu. Kendi sistemini host et.', tier:3, tierLabel:'B3' },
+  { id:'desk',       name:'Akıllı Yükseklilik Ayarlı Masa', icon:'🗃️', price:5000, desc:'RGB şeritli motorlu masa.', tier:3, tierLabel:'B3' },
+  { id:'vr',         name:'VR Headset',      icon:'🥽', price:7000, desc:'Sistemleri sanal ortamda modelle.', tier:3, tierLabel:'B3' },
+];
+
+// Which tiers are available per chapter (1-indexed)
+const SHOP_TIER_PER_CHAPTER = { 0:1, 1:2, 2:3 }; // chapter index → tier
+
+const CHAPTERS = [
+  { num:'BÖLÜM 1', title:'Sıradan Başlangıçlar', sub:'Üniversiteden yeni mezunsun. Küçük ofisin var. Mahalledeki müşterilerle başla, temel analiz becerilerini geliştir.' },
+  { num:'BÖLÜM 2', title:'Gizemli Müşteri',       sub:'Gece yarısı kapı çalıyor. Siyah takım elbiseli, yüzü görünmeyen biri giriyor. "Mimar" diyor kendine.' },
+  { num:'BÖLÜM 3', title:'Büyük İhale',            sub:'Gizli cemiyetin en karmaşık sistemleri. Doğru modellemen her şeyi değiştirecek.' },
+];
+
+// Per-chapter base reward (full score, no mistakes)
+const CHAPTER_BASE_REWARD = [1800, 7000, 22000];
+// Penalty per wrong answer
+const WRONG_PENALTY_PCT = 0.20; // 20% düşüş her hatalıda
+
+const MISSIONS = [
+  // ── BÖLÜM 0 ──
+  { ch:0, bg:0, npc:'baker',
+    lines:[{speaker:'AHMET USTA',color:'#ff8c00',text:'Selam evlat! Duydum sistem yapıyorsun.'},{speaker:'AHMET USTA',color:'#ff8c00',text:'Fırında stok takibini elle yapıyorum, zor oluyor.'},{speaker:'AHMET USTA',color:'#ff8c00',text:'Bana bir sistem analizi yapar mısın?'}],
+    concept:{title:'🎯 ACTOR & USE CASE NEDİR?',body:'Actor: Sistemi kullanan kişi/rol\n("Kim kullanıyor?")\n\nUse Case: Aktörün yaptığı eylem\n("Ne yapıyor?")'},
+    q:"Ahmet Usta'nın stok takip sisteminde ACTOR ve USE CASE'leri doğru sınıflandır:",
+    hint:"Actor = 'Kim kullanıyor?', Use Case = 'Ne yapıyor?'",
+    type:'dd',
+    items:[{id:'a1',l:'Fırıncı',t:'actor'},{id:'a2',l:'Depo Görevlisi',t:'actor'},{id:'u1',l:'Stok Görüntüle',t:'usecase'},{id:'u2',l:'Stok Güncelle',t:'usecase'},{id:'u3',l:'Rapor Al',t:'usecase'},{id:'u4',l:'Yeni Ürün Ekle',t:'usecase'}],
+    ca:['a1','a2'],cu:['u1','u2','u3','u4'],
+  },
+  { ch:0, bg:0, npc:'librarian',
+    lines:[{speaker:'SELİN HANIM',color:'#4a90d9',text:'Genç analist, kütüphanemize hoş geldin.'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'Üyelerimiz kitap ödünç alıyor ama her şey kağıtta.'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'User Story formatında analiz yapar mısın?'}],
+    concept:{title:'📝 USER STORY FORMATI',body:'"Bir [Aktör] olarak,\n[Eylem] istiyorum,\nböylece [Fayda] elde edeyim."'},
+    q:"Selin Hanım'ın kütüphane üyeleri için doğru User Story hangisi?",
+    hint:'Üç parça: Kim, Ne yapmak, Neden.',
+    type:'mc',
+    choices:[
+      {id:'c1',text:'"Sistem kitapları takip etmeli ve bildirim göndermeli."',ok:false},
+      {id:'c2',text:'"Bir Kütüphane Üyesi olarak, online kitap ödünç almak istiyorum, böylece kütüphaneye gitmeden kitaba ulaşabileyim."',ok:true},
+      {id:'c3',text:'"Kitap ödünç alma sistemi yapılacak."',ok:false},
+      {id:'c4',text:'"Kütüphaneci olarak kitap veritabanına bakabileyim."',ok:false},
+    ],
+  },
+  { ch:0, bg:0, npc:'gym',
+    lines:[{speaker:'MEHMET BEY',color:'#27ae60',text:'Analist kardeş! Spor salonuma sistem lazım.'},{speaker:'MEHMET BEY',color:'#27ae60',text:'Üyeler kayıt olacak, antrenörler program yapacak.'},{speaker:'MEHMET BEY',color:'#27ae60',text:'"Kayıt Ol" her çalıştığında e-posta doğrulama şart!'}],
+    concept:{title:'🔗 <<include>> İLİŞKİSİ',body:'Bir use case her çalıştığında\nbir başkası da zorunlu çalışırsa\n→ <<include>> kullan'},
+    q:'"Üye Kayıt Ol" her çalıştığında "E-posta Doğrulama" zorunlu çalışıyorsa, ilişki türü?',
+    hint:'Zorunlu/her zaman → <<include>>. Bazen/opsiyonel → <<extend>>.',
+    type:'mc',
+    choices:[
+      {id:'c1',text:'<<extend>> — Opsiyonel genişletme',ok:false},
+      {id:'c2',text:'<<include>> — Zorunlu bağımlılık',ok:true},
+      {id:'c3',text:'Inheritance (Kalıtım)',ok:false},
+      {id:'c4',text:'Basit Association ilişkisi',ok:false},
+    ],
+  },
+  // ── BÖLÜM 1 ──
+  { ch:1, bg:1, npc:'mimar',
+    lines:[{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'...Gölge üyelerimiz sisteme girdiğinde iz bırakmamalı.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Liderlerimiz her şeyi görmeli. Her şeyi.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'User Story yaz. Hata yaparsan... sonuçları olur.'}],
+    concept:{title:'🔒 GELİŞMİŞ USER STORY',body:'"Bir [Rol] olarak,\n[Ne yapmak] istiyorum,\nböylece [Neden/Fayda]."\n\nHer parça NET olmalı!'},
+    q:"Mimar'ın isteğine göre 'Gölge Üye' için doğru User Story'yi tamamla:",
+    hint:'"Gölge Üye" aktör, anonim giriş eylem, kimlik gizliliği fayda.',
+    type:'sb',
+    template:['Bir ','BLANK_ACTOR',' olarak, ','BLANK_ACTION',' istiyorum, böylece ','BLANK_BENEFIT','.'],
+    blanks:{
+      BLANK_ACTOR:{opts:['Gölge Üye','Sistem Yöneticisi','Lider','Misafir'],ok:'Gölge Üye'},
+      BLANK_ACTION:{opts:['sisteme anonim giriş yapmak','tüm üyeleri görmek','şifremi değiştirmek','rapor almak'],ok:'sisteme anonim giriş yapmak'},
+      BLANK_BENEFIT:{opts:['kimliğim açığa çıkmaz','daha hızlı çalışırım','para kazanırım','sistemi yönetirim'],ok:'kimliğim açığa çıkmaz'},
+    },
+  },
+  { ch:1, bg:1, npc:'mimar',
+    lines:[{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Üyelerimiz mesaj gönderir.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Bazen — sadece bazen — şifreleme isterler.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Bu opsiyonel ilişkiyi nasıl modellersin?'}],
+    concept:{title:'🔀 <<extend>> İLİŞKİSİ',body:'Opsiyonel senaryo:\nTemel use case\'e\nkoşullu eklenir.\n\n"Mesajı Şifrele" sadece\nbazen devreye girer.'},
+    q:'"Mesaj Gönder"e bazen eklenen "Mesajı Şifrele" için doğru Use Case ilişkisi?',
+    hint:'"Bazen", "opsiyonel" → <<extend>>.',
+    type:'mc',
+    choices:[
+      {id:'c1',text:'"Mesaj Gönder" <<include>> "Mesajı Şifrele"',ok:false},
+      {id:'c2',text:'"Mesajı Şifrele" <<extend>> "Mesaj Gönder"',ok:true},
+      {id:'c3',text:'İki Use Case bağımsız, ilişki yok',ok:false},
+      {id:'c4',text:'"Şifreci" adında yeni Actor eklenmeli',ok:false},
+    ],
+  },
+  { ch:1, bg:1, npc:'mimar',
+    lines:[{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Üç aktör var: Gölge Üye, Lider, Yönetici.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Giriş herkese ortak. Raporlar sadece Lider\'e.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Doğru sınıfla analist.'}],
+    concept:{title:'👥 ÇOKLU AKTÖR',body:'Birden fazla aktör aynı\nuse case\'i kullanabilir.\n\nFakat özel use case\'ler\nsadece belirli aktöre ait olur.'},
+    q:'Sisteme dahil olacak aktörleri ve use case\'leri doğru sınıflandır:',
+    hint:'Giriş Yap → Herkese. Rapor Görüntüle → Sadece Lider.',
+    type:'dd',
+    items:[{id:'a1',l:'Gölge Üye',t:'actor'},{id:'a2',l:'Lider',t:'actor'},{id:'u1',l:'Giriş Yap',t:'usecase'},{id:'u2',l:'Anonim Mesaj Gönder',t:'usecase'},{id:'u3',l:'Üye Raporlarını Gör',t:'usecase'},{id:'u4',l:'Sistem Denetimi',t:'usecase'}],
+    ca:['a1','a2'],cu:['u1','u2','u3','u4'],
+  },
+  // ── BÖLÜM 2 ──
+  { ch:2, bg:2, npc:'mimar',
+    lines:[{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Büyük İhale zamanı analist.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Tüm üyelik sistemini yeniden kuracağız.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Use Case ilişkilerini modellemen gerekiyor.'}],
+    concept:{title:'🏆 KAPSAMLI MODELLEME',body:'1. Tüm aktörleri belirle\n2. Her aktörün use case\'lerini listele\n3. <<include>> ve <<extend>> ekle\n4. Sistem sınırını çiz'},
+    q:'"Üye Girişi" her çalışmada "Oturum Kaydı" zorunlu; "2FA" sadece açıksa devreye giriyor. İki ilişki sırasıyla?',
+    hint:'Zorunlu → <<include>>, Koşullu → <<extend>>.',
+    type:'mc',
+    choices:[
+      {id:'c1',text:'"Oturum Kaydı"=<<extend>>, "2FA"=<<include>>',ok:false},
+      {id:'c2',text:'İkisi de <<include>>',ok:false},
+      {id:'c3',text:'"Oturum Kaydı"=<<include>>, "2FA"=<<extend>>',ok:true},
+      {id:'c4',text:'İkisi de <<extend>>',ok:false},
+    ],
+  },
+  { ch:2, bg:2, npc:'mimar',
+    lines:[{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Son soru analist. Son.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'"Gölge Analist" unvanını hak etmek istiyorsan...'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Geçersiz User Story\'yi bul.'}],
+    concept:{title:'🎓 USER STORY ÖZET',body:'Geçerli User Story:\n1. Aktör NET belirtilmeli\n2. Eylem spesifik olmalı\n3. Fayda ölçülebilir olmalı'},
+    q:"Aşağıdakilerden hangisi GEÇERSİZ bir User Story?",
+    hint:"Geçerli User Story'de kim, ne, neden açıkça ve spesifik olmalı.",
+    type:'mc',
+    choices:[
+      {id:'c1',text:'"Bir Admin olarak, kullanıcı hesaplarını silmek istiyorum, böylece sistemi düzenli tutabilirim."',ok:false},
+      {id:'c2',text:'"Sistem kullanıcıları yönetmeli ve güncel tutmalı."',ok:true},
+      {id:'c3',text:'"Bir Müşteri olarak, sipariş geçmişimi görmek istiyorum, böylece alışverişlerimi takip edebilirim."',ok:false},
+      {id:'c4',text:'"Bir Analist olarak, gereksinimleri modellemek istiyorum, böylece ekip netlik kazanır."',ok:false},
+    ],
+  },
+  { ch:2, bg:2, npc:'mimar',
+    lines:[{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Son bir test daha analist.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Aktörler ve use case\'leri tam belirleyebiliyor musun?'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Bu sefer hata affedilmez.'}],
+    concept:{title:'🔮 KAPSAMLI USE CASE DİYAGRAMI',body:'Sistem sınırı içindeki\ntüm use case\'ler ve\ndışındaki aktörler\ndiyagramı oluşturur.'},
+    q:"Gizli Cemiyet İletişim Sistemi'nin tüm aktörlerini ve use case'lerini doğru sınıflandır:",
+    hint:'Aktörler sistemi kullanan roller, use case\'ler ise sistemde yapılan eylemlerdir.',
+    type:'dd',
+    items:[{id:'a1',l:'Gölge Üye',t:'actor'},{id:'a2',l:'Lider',t:'actor'},{id:'a3',l:'Sistem Yöneticisi',t:'actor'},{id:'u1',l:'Anonim Giriş',t:'usecase'},{id:'u2',l:'Şifreli Mesaj Gönder',t:'usecase'},{id:'u3',l:'Kullanıcı Yönet',t:'usecase'},{id:'u4',l:'Sistem Denetimi',t:'usecase'},{id:'u5',l:'Üye Raporu Görüntüle',t:'usecase'}],
+    ca:['a1','a2','a3'],cu:['u1','u2','u3','u4','u5'],
+  },
+];
+
+// ══════════════════════════════════════════
+//  GAME STATE
+// ══════════════════════════════════════════
+const GS = {
+  money:0, xp:0, correctCount:0,
+  missionIdx:0, currentChapter:-1,
+  wrongCount:0,        // per-mission wrong answers
+  missionEarned:0,     // what we'll actually earn this mission
+  chapterEarned:0,     // accumulated for current chapter
+  inventory:[],        // bought item ids
+};
+
+// missions per chapter
+function missionsForChapter(ch){ return MISSIONS.filter(m=>m.ch===ch); }
+function chapterOf(mIdx){ return MISSIONS[mIdx].ch; }
+
+// ── LAYERS ──
+function showLayer(id){document.getElementById(id).classList.add('show');}
+function hideLayer(id){document.getElementById(id).classList.remove('show');}
+function showGuide(){showLayer('scr-guide');}
+function closeGuide(){hideLayer('scr-guide');}
+
+// ── TITLE ──
+function startGame(){
+  hideLayer('scr-title');
+  document.getElementById('hud').style.display='flex';
+  resizeCv();
+  GS.currentChapter=-1;
+  GS.missionIdx=0;
+  drawBg(0);
+  startChapter(0);
+}
+
+// ── CHAPTER ──
+function startChapter(chIdx){
+  const ch=CHAPTERS[chIdx];
+  document.getElementById('ch-num').textContent=ch.num;
+  document.getElementById('ch-title').textContent=ch.title;
+  document.getElementById('ch-sub').textContent=ch.sub;
+  GS.currentChapter=chIdx;
+  GS.chapterEarned=0;
+  document.getElementById('h-chap').textContent=`${chIdx+1} / 3`;
+  showLayer('scr-chapter');
+}
+function dismissChapter(){
+  hideLayer('scr-chapter');
+  // Find first mission of this chapter
+  const first=MISSIONS.findIndex(m=>m.ch===GS.currentChapter);
+  GS.missionIdx=first;
+  loadMission(GS.missionIdx);
+}
+
+// ── MISSION ──
+function loadMission(idx){
+  const m=MISSIONS[idx];
+  const chMissions=missionsForChapter(m.ch);
+  const mPosInCh=chMissions.indexOf(m)+1;
+  document.getElementById('h-mission').textContent=`${mPosInCh} / ${chMissions.length}`;
+
+  // Base reward for this mission = chapter base / num missions in chapter
+  const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/chMissions.length);
+  GS.missionEarned=base;
+  GS.wrongCount=0;
+
+  // Play scene then show question
+  hidePanel();
+  startScene(m.bg, m.npc, m.lines, ()=>{
+    showQuestion(m);
+  });
+}
+
+// ── QUESTION PANEL ──
+function hidePanel(){
+  document.getElementById('question-panel').classList.remove('show');
+}
+function showQuestion(m){
+  // populate concept
+  const cc=document.getElementById('concept-card');
+  if(m.concept){
+    cc.style.display='block';
+    document.getElementById('cc-title').textContent=m.concept.title;
+    document.getElementById('cc-body').textContent=m.concept.body;
+  } else { cc.style.display='none'; }
+
+  const mIdx=MISSIONS.indexOf(m);
+  const chMissions=missionsForChapter(m.ch);
+  const mPos=chMissions.indexOf(m)+1;
+  document.getElementById('q-label').textContent=`📋 GÖREV ${mPos} / ${chMissions.length}`;
+  document.getElementById('h-mission').textContent=`${mPos} / ${chMissions.length}`;
+
+  const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/chMissions.length);
+  updatePotDisplay(base, 0);
+
+  const hb=document.getElementById('hint-box');
+  if(m.hint){hb.style.display='block';hb.innerHTML=`<strong>💡 İpucu:</strong> ${m.hint}`;}
+  else{hb.style.display='none';}
+
+  document.getElementById('q-text').textContent=m.q;
+  document.getElementById('fb-box').className='fb-box';
+  document.getElementById('action-row').innerHTML='';
+
+  if(m.type==='mc') renderMC(m);
+  else if(m.type==='dd') renderDD(m);
+  else if(m.type==='sb') renderSB(m);
+
+  // Animate panel sliding in
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      document.getElementById('question-panel').classList.add('show');
+    });
+  });
+}
+
+function updatePotDisplay(base, wrongs){
+  const reduced=Math.round(base*Math.pow(1-WRONG_PENALTY_PCT, wrongs));
+  GS.missionEarned=reduced;
+  document.getElementById('q-pot').textContent=`₺${reduced.toLocaleString()}`;
+  const pr=document.getElementById('penalty-row');
+  if(wrongs>0){
+    const lost=base-reduced;
+    pr.textContent=`⚠ ${wrongs} hata — ₺${lost.toLocaleString()} düştü`;
+  } else { pr.textContent=''; }
+}
+
+// ── MULTIPLE CHOICE ──
+function renderMC(m){
+  const ia=document.getElementById('interact-area');
+  ia.innerHTML='<div class="choice-list" id="choice-list"></div>';
+  const list=document.getElementById('choice-list');
+  ['A','B','C','D'].forEach((lt,i)=>{
+    const ch=m.choices[i];if(!ch)return;
+    const btn=document.createElement('button');btn.className='c-btn';btn.id=`cb-${ch.id}`;
+    btn.innerHTML=`<span class="c-letter">${lt}</span><span>${ch.text}</span>`;
+    btn.onclick=()=>{
+      document.querySelectorAll('.c-btn').forEach(b=>b.classList.remove('sel'));
+      btn.classList.add('sel');
+      document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${ch.id}')">✓ ONAYLA</button>`;
+    };
+    list.appendChild(btn);
+  });
+}
+function checkMC(sid){
+  const m=MISSIONS[GS.missionIdx];
+  const ch=m.choices.find(c=>c.id===sid);
+  const btn=document.getElementById(`cb-${sid}`);
+  const fb=document.getElementById('fb-box');
+  if(ch.ok){
+    btn.classList.add('ok');
+    onCorrect(m);
+  } else {
+    GS.wrongCount++;
+    btn.classList.add('no');
+    const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
+    updatePotDisplay(base, GS.wrongCount);
+    fb.className='fb-box no';fb.textContent='❌ Yanlış! Kavramları tekrar düşün ve başka şık dene.';
+    document.getElementById('action-row').innerHTML='';
+    document.querySelectorAll('.c-btn:not(.no)').forEach(b=>{
+      b.onclick=()=>{
+        const id=b.id.replace('cb-','');
+        document.querySelectorAll('.c-btn:not(.no)').forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel');
+        document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${id}')">✓ ONAYLA</button>`;
+      };
+    });
+  }
+}
+
+// ── DRAG DROP ──
+function renderDD(m){
+  const ia=document.getElementById('interact-area');
+  const aSlot=[],uSlot=[];
+  function rebuild(){
+    ia.innerHTML=`
+      <div style="font-size:.76rem;color:var(--dim);margin-bottom:8px">Kartlara tıklayarak sınıflandır:</div>
+      <div class="dd-pool" id="dd-pool"></div>
+      <div class="dd-cols">
+        <div class="dd-col" id="dd-a"><div class="dd-col-title" style="color:var(--neon2)">🎭 ACTORS</div><div id="dd-a-placed"></div></div>
+        <div class="dd-col" id="dd-u"><div class="dd-col-title" style="color:var(--neon)">📋 USE CASES</div><div id="dd-u-placed"></div></div>
+      </div>`;
+    const pool=document.getElementById('dd-pool');
+    m.items.forEach(item=>{
+      if(aSlot.includes(item.id)||uSlot.includes(item.id))return;
+      const c=document.createElement('div');c.className=`dd-chip ${item.t}`;c.textContent=item.l;
+      c.onclick=()=>{if(item.t==='actor')aSlot.push(item.id);else uSlot.push(item.id);rebuild();ddSubmitBtn(m,aSlot,uSlot);};
+      pool.appendChild(c);
+    });
+    [[aSlot,'dd-a-placed','actor'],[uSlot,'dd-u-placed','usecase']].forEach(([sl,cid,type])=>{
+      const cont=document.getElementById(cid);
+      sl.forEach(id=>{
+        const item=m.items.find(x=>x.id===id);
+        const chip=document.createElement('span');chip.className=`placed ${type}`;
+        chip.innerHTML=`${item.l} <span class="x" onclick="rmDD('${id}','${type==='actor'?'a':'u'}')">✕</span>`;
+        cont.appendChild(chip);
+      });
+    });
+    ddSubmitBtn(m,aSlot,uSlot);
+  }
+  window.rmDD=(id,col)=>{
+    const arr=col==='a'?aSlot:uSlot;const i=arr.indexOf(id);if(i>-1)arr.splice(i,1);rebuild();
+  };
+  window._ddA=aSlot;window._ddU=uSlot;window._ddM=m;
+  rebuild();
+}
+function ddSubmitBtn(m,aSlot,uSlot){
+  const ar=document.getElementById('action-row');ar.innerHTML='';
+  const b=document.createElement('button');b.className='btn btn-neon';b.textContent='✓ ANALİZİ ONAYLA';
+  b.onclick=()=>{
+    const aOk=m.ca.every(a=>aSlot.includes(a))&&aSlot.every(a=>m.ca.includes(a));
+    const uOk=m.cu.every(u=>uSlot.includes(u))&&uSlot.every(u=>m.cu.includes(u));
+    const fb=document.getElementById('fb-box');
+    if(aOk&&uOk){onCorrect(m);}
+    else{
+      GS.wrongCount++;
+      const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
+      updatePotDisplay(base,GS.wrongCount);
+      fb.className='fb-box no';
+      fb.textContent=`❌ Doğru değil! ${!aOk?"Actor'ler yanlış. ":""}${!uOk?"Use Case'ler yanlış. ":""}Tekrar dene.`;
+    }
+  };
+  ar.appendChild(b);
+}
+
+// ── STORY BUILDER ──
+function renderSB(m){
+  const ia=document.getElementById('interact-area');
+  const filled={};Object.keys(m.blanks).forEach(k=>filled[k]=null);
+  function rebuild(){
+    let html='<div class="sb-template">';
+    m.template.forEach(part=>{
+      if(part.startsWith('BLANK_')){
+        if(filled[part])html+=`<span class="sb-blank filled" onclick="clearSB('${part}')">${filled[part]} ✕</span>`;
+        else html+=`<span class="sb-blank">[seç]</span>`;
+      }else{html+=part;}
+    });
+    html+='</div>';
+    Object.keys(m.blanks).forEach(k=>{
+      if(!filled[k]){
+        html+=`<div style="margin-top:10px;font-size:.7rem;color:var(--dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px">${k.replace('BLANK_','')}</div><div class="sb-opts">`;
+        m.blanks[k].opts.forEach(opt=>{
+          const used=Object.values(filled).includes(opt);
+          html+=`<div class="sb-opt${used?' used':''}" onclick="fillSB('${k}','${opt.replace(/'/g,"&#39;")}')">${opt}</div>`;
+        });
+        html+='</div>';
+      }
+    });
+    ia.innerHTML=html;
+    const all=Object.values(filled).every(v=>v!==null);
+    document.getElementById('action-row').innerHTML=all?`<button class="btn btn-neon" onclick="checkSB()">✓ USER STORY'Yİ ONAYLA</button>`:'';
+  }
+  window.fillSB=(k,v)=>{filled[k]=v;rebuild();};
+  window.clearSB=(k)=>{filled[k]=null;rebuild();};
+  window._sbF=filled;window._sbM=m;
+  rebuild();
+}
+function checkSB(){
+  const m=window._sbM,f=window._sbF;
+  const fb=document.getElementById('fb-box');
+  let ok=true;Object.keys(m.blanks).forEach(k=>{if(f[k]!==m.blanks[k].ok)ok=false;});
+  if(ok){onCorrect(m);}
+  else{
+    GS.wrongCount++;
+    const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
+    updatePotDisplay(base,GS.wrongCount);
+    fb.className='fb-box no';fb.textContent='❌ User Story doğru değil! Kim, ne, neden — her parçayı kontrol et.';
+    document.getElementById('action-row').innerHTML=`<button class="btn btn-pink" onclick="renderSB(window._sbM)">🔄 Tekrar Dene</button>`;
+  }
+}
+
+// ── CORRECT ──
+function onCorrect(m){
+  const earned=GS.missionEarned;
+  GS.money+=earned;
+  GS.xp+=30+Math.round(20*(1-GS.wrongCount*WRONG_PENALTY_PCT));
+  GS.correctCount++;
+  GS.chapterEarned+=earned;
+  updateHUD();
+
+  // Slide panel out, show reward
+  hidePanel();
+  setTimeout(()=>{
+    const penalty=GS.wrongCount>0?`${GS.wrongCount} hata nedeniyle ₺${Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length)-earned} kesildi`:'';
+    document.getElementById('rew-icon').textContent=GS.wrongCount===0?'🌟':'✅';
+    document.getElementById('rew-title').textContent=GS.wrongCount===0?'MÜKEMMEL! TAM PUAN!':'GÖREV TAMAMLANDI!';
+    document.getElementById('rew-sub').textContent=GS.wrongCount===0?'Hiç hata yapmadan çözdün!':'Bazı hatalar oldu ama tamamladın.';
+    document.getElementById('rew-earn').textContent=`+₺${earned.toLocaleString()} kazandın`;
+    document.getElementById('rew-penalty').textContent=penalty;
+    document.getElementById('rew-btn').textContent='SONRAKI →';
+    document.getElementById('rew-btn').onclick=nextStep;
+    showLayer('scr-reward');
+  }, 500);
+}
+
+function nextStep(){
+  hideLayer('scr-reward');
+  GS.missionIdx++;
+  const nextM=MISSIONS[GS.missionIdx];
+
+  // Check if chapter changed or game ended
+  if(!nextM){
+    // game over after last chapter shop
+    openShop(GS.currentChapter, ()=>endGame());
+    return;
+  }
+
+  if(nextM.ch !== GS.currentChapter){
+    // chapter ended → go to shop
+    openShop(GS.currentChapter, ()=>{
+      startChapter(nextM.ch);
+    });
+  } else {
+    loadMission(GS.missionIdx);
+  }
+}
+
+// ── SHOP ──
+function openShop(chapterIdx, cb){
+  window._shopCb=cb;
+  const tier=SHOP_TIER_PER_CHAPTER[chapterIdx]||1;
+
+  document.getElementById('shop-chapter-title').textContent=`BÖLÜM ${chapterIdx+1} SONU — ALIŞVERİŞ`;
+  document.getElementById('shop-wallet-val').textContent=`₺${GS.money.toLocaleString()}`;
+
+  // Build shop grid — show current tier + all lower tiers
+  const grid=document.getElementById('shop-grid');
+  grid.innerHTML='';
+  SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>{
+    const owned=GS.inventory.includes(item.id);
+    const canAfford=GS.money>=item.price;
+    const div=document.createElement('div');
+    div.className=`shop-item${owned?' bought':!canAfford?' cant':''}`;
+    div.innerHTML=`
+      <div class="si-tier tier-b${item.tier}">${item.tierLabel}</div>
+      <div class="si-icon">${item.icon}</div>
+      <div class="si-name">${item.name}</div>
+      <div class="si-desc">${item.desc}</div>
+      <div class="si-price">${owned?'✓ ALINDI':`₺${item.price.toLocaleString()}`}</div>
+      ${owned?`<div class="shop-bought-badge">Envanterimde</div>`:canAfford?`<button class="shop-buy-btn" onclick="buyItem('${item.id}')">SATIN AL</button>`:`<button class="shop-buy-btn" disabled style="opacity:.4;cursor:not-allowed">Yetersiz Bakiye</button>`}
+    `;
+    grid.appendChild(div);
+  });
+
+  renderInventoryBar();
+  showLayer('scr-shop');
+  startShopWalk(()=>{});
+}
+
+function buyItem(id){
+  const item=SHOP_ITEMS.find(i=>i.id===id);
+  if(!item||GS.inventory.includes(id)||GS.money<item.price) return;
+  GS.money-=item.price;
+  GS.inventory.push(id);
+  updateHUD();
+  // re-render shop
+  openShopRefresh();
+}
+
+function openShopRefresh(){
+  const chapterIdx=GS.currentChapter;
+  const tier=SHOP_TIER_PER_CHAPTER[chapterIdx]||1;
+  document.getElementById('shop-wallet-val').textContent=`₺${GS.money.toLocaleString()}`;
+  const grid=document.getElementById('shop-grid');
+  grid.innerHTML='';
+  SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>{
+    const owned=GS.inventory.includes(item.id);
+    const canAfford=GS.money>=item.price;
+    const div=document.createElement('div');
+    div.className=`shop-item${owned?' bought':!canAfford?' cant':''}`;
+    div.innerHTML=`
+      <div class="si-tier tier-b${item.tier}">${item.tierLabel}</div>
+      <div class="si-icon">${item.icon}</div>
+      <div class="si-name">${item.name}</div>
+      <div class="si-desc">${item.desc}</div>
+      <div class="si-price">${owned?'✓ ALINDI':`₺${item.price.toLocaleString()}`}</div>
+      ${owned?`<div class="shop-bought-badge">Envanterimde</div>`:canAfford?`<button class="shop-buy-btn" onclick="buyItem('${item.id}')">SATIN AL</button>`:`<button class="shop-buy-btn" disabled style="opacity:.4;cursor:not-allowed">Yetersiz Bakiye</button>`}
+    `;
+    grid.appendChild(div);
+  });
+  renderInventoryBar();
+}
+
+function renderInventoryBar(){
+  const bar=document.getElementById('inventory-bar');
+  if(GS.inventory.length===0){bar.innerHTML='<span style="color:var(--dim);font-size:.78rem">Henüz alım yok</span>';return;}
+  bar.innerHTML='';
+  GS.inventory.forEach(id=>{
+    const it=SHOP_ITEMS.find(i=>i.id===id);
+    if(!it)return;
+    const div=document.createElement('div');div.className='inv-item';
+    div.textContent=`${it.icon} ${it.name}`;
+    bar.appendChild(div);
+  });
+}
+
+function closeShop(){
+  hideLayer('scr-shop');
+  if(window._shopCb){window._shopCb();window._shopCb=null;}
+}
+
+// ── HUD ──
+function updateHUD(){
+  document.getElementById('h-money').textContent=`₺${GS.money.toLocaleString()}`;
+  document.getElementById('h-xp').textContent=GS.xp;
+  document.getElementById('h-xpbar').style.width=Math.min((GS.xp/600)*100,100)+'%';
+  let t='Stajyer Analist';
+  if(GS.xp>=80)t='Junior Analist';
+  if(GS.xp>=160)t='Sistem Analisti';
+  if(GS.xp>=280)t='⭐ Gölge Analist';
+  document.getElementById('h-title').textContent=t;
+}
+
+// ── END GAME ──
+function endGame(){
+  showLayer('scr-final');
+  document.getElementById('h-chap').textContent='✓ BİTTİ';
+  document.getElementById('final-stats').innerHTML=`
+    <div class="fs-stat"><div class="fs-val">₺${GS.money.toLocaleString()}</div><div class="fs-lbl">Kalan Bakiye</div></div>
+    <div class="fs-stat"><div class="fs-val">${GS.xp}</div><div class="fs-lbl">Toplam XP</div></div>
+    <div class="fs-stat"><div class="fs-val">${GS.correctCount}/${MISSIONS.length}</div><div class="fs-lbl">Çözülen Görev</div></div>
+    <div class="fs-stat"><div class="fs-val">${GS.inventory.length}</div><div class="fs-lbl">Alınan Ekipman</div></div>
+  `;
+  const fi=document.getElementById('final-inventory');
+  if(GS.inventory.length>0){
+    fi.innerHTML=`<div style="font-family:Orbitron;font-size:.72rem;color:var(--neon);letter-spacing:2px;margin-bottom:10px">🛒 ALDIĞIN EKİPMANLAR</div><div class="inventory-bar" style="justify-content:center">${GS.inventory.map(id=>{const it=SHOP_ITEMS.find(i=>i.id===id);return it?`<div class="inv-item">${it.icon} ${it.name}</div>`:''}).join('')}</div>`;
+  } else {
+    fi.innerHTML=`<div style="color:var(--dim);font-size:.85rem">Hiç ekipman alınmadı — bir dahaki sefere daha doğru cevap ver!</div>`;
+  }
+}
+
+function restartGame(){
+  GS.money=0;GS.xp=0;GS.correctCount=0;GS.missionIdx=0;GS.currentChapter=-1;GS.wrongCount=0;GS.missionEarned=0;GS.chapterEarned=0;GS.inventory=[];
+  hideLayer('scr-final');
+  updateHUD();
+  resizeCv();
+  drawBg(0);
+  startChapter(0);
+}
+
+// ── INIT ──
+resizeCv();
+drawBg(0);
+updateHUD();
+</script>
+</body>
+</html>
