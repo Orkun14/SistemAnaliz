@@ -866,7 +866,7 @@ body::after {
 
 /* Shop walk-in animation overlay */
 #shop-walk-canvas {
-  position:absolute; inset:0; pointer-events:none; z-index:5;
+  position:absolute; inset:0; pointer-events:none; z-index:0;
 }
 
 /* Inventory bar (bottom of shop) */
@@ -981,7 +981,7 @@ body::after {
     <div class="trans-footer">PRESS <span class="space-key">SPACE</span> TO CONTINUE</div>
   </div>
 </div>
-<button id="skip-btn" onclick="skipScene()" style="display:none">ATLA ▶▶</button>
+<button id="skip-btn" onclick="skipScene()" style="display:none">SKIP ▶▶</button>
 
 <!-- ══ QUESTION PANEL ══ -->
 <div id="question-panel">
@@ -1028,7 +1028,7 @@ body::after {
     <div class="start-btn-wrap">
       <button class="btn-main" onclick="startGame()">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        OYUNA BAŞLA
+        INITIALIZE SYSTEM
       </button>
     </div>
 
@@ -1047,15 +1047,15 @@ body::after {
 
 <!-- Guide overlay (on top of title or game) -->
 <div class="fs-layer" id="scr-guide" style="background:rgba(6,6,15,.95);z-index:500">
-  <h2 style="font-family:Orbitron;color:var(--neon);margin-bottom:20px">📖 KAVRAM KILAVUZU</h2>
+  <h2 style="font-family:Orbitron;color:var(--neon);margin-bottom:20px">📖 CONCEPT ARCHIVE</h2>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;max-width:800px;width:100%;text-align:left;margin-bottom:28px">
-    <div class="concept-card"><div class="cc-title">🎭 Actor</div><div class="cc-body">Sistemi kullanan kişi, rol veya harici sistem.<br>"<span style="color:var(--neon)">Kim kullanıyor?</span>"</div></div>
-    <div class="concept-card"><div class="cc-title">📋 Use Case</div><div class="cc-body">Aktörün sistemde yaptığı eylem/amaç.<br>"<span style="color:var(--neon)">Ne yapıyor?</span>"</div></div>
-    <div class="concept-card"><div class="cc-title">📝 User Story</div><div class="cc-body" style="color:var(--neon2);font-family:'Share Tech Mono';font-size:.75rem">"Bir [Aktör] olarak,<br>[Eylem] istiyorum,<br>böylece [Fayda]."</div></div>
-    <div class="concept-card"><div class="cc-title">🔗 &lt;&lt;include&gt;&gt;</div><div class="cc-body">Zorunlu bağımlılık.<br>Her çalışmada tetiklenir.</div></div>
-    <div class="concept-card"><div class="cc-title">🔀 &lt;&lt;extend&gt;&gt;</div><div class="cc-body">Opsiyonel genişletme.<br>Koşul sağlandığında devreye girer.</div></div>
+    <div class="concept-card"><div class="cc-title">🎭 Actor</div><div class="cc-body">Person, role or external system using the system.<br>"<span style="color:var(--neon)">Who uses it?</span>"</div></div>
+    <div class="concept-card"><div class="cc-title">📋 Use Case</div><div class="cc-body">The action/goal the actor has within the system.<br>"<span style="color:var(--neon)">What do they do?</span>"</div></div>
+    <div class="concept-card"><div class="cc-title">📝 User Story</div><div class="cc-body" style="color:var(--neon2);font-family:'Share Tech Mono';font-size:.75rem">"As a(n) [Actor],<br>I want to [Action],<br>so that [Benefit]."</div></div>
+    <div class="concept-card"><div class="cc-title">🔗 &lt;&lt;include&gt;&gt;</div><div class="cc-body">Mandatory dependency.<br>Triggers on every execution.</div></div>
+    <div class="concept-card"><div class="cc-title">🔀 &lt;&lt;extend&gt;&gt;</div><div class="cc-body">Optional extension.<br>Activates when conditions are met.</div></div>
   </div>
-  <button class="btn btn-neon" onclick="closeGuide()">ANLADIM ✓</button>
+  <button class="btn btn-neon" onclick="closeGuide()">ACKNOWLEDGE ✓</button>
 </div>
 
 <!-- Chapter transition -->
@@ -1063,7 +1063,7 @@ body::after {
   <div class="ch-num" id="ch-num"></div>
   <div class="ch-title" id="ch-title"></div>
   <div class="ch-sub" id="ch-sub"></div>
-  <button class="btn btn-neon" onclick="dismissChapter()">DEVAM ET →</button>
+  <button class="btn btn-neon" onclick="dismissChapter()">CONTINUE →</button>
 </div>
 
 <!-- Shop screen -->
@@ -1078,11 +1078,11 @@ body::after {
   </div>
   <div class="shop-grid" id="shop-grid" style="z-index:10;position:relative"></div>
   <div style="text-align:center;margin-bottom:10px;z-index:10;position:relative;padding:0 40px">
-    <div style="font-family:'Orbitron';font-size:.68rem;color:var(--dim);letter-spacing:2px;margin-bottom:10px">SATIN ALDIKLARIM</div>
-    <div class="inventory-bar" id="inventory-bar"><span style="color:var(--dim);font-size:.78rem">Henüz alım yok</span></div>
+    <div style="font-family:'Orbitron';font-size:.68rem;color:var(--dim);letter-spacing:2px;margin-bottom:10px">INVENTORY LOG</div>
+    <div class="inventory-bar" id="inventory-bar"><span style="color:var(--dim);font-size:.78rem">No acquisitions yet</span></div>
   </div>
   <div style="text-align:center;z-index:10;position:relative;padding-bottom:20px">
-    <button class="btn-return" onclick="closeShop()">DEVAM ET →</button>
+    <button class="btn-return" onclick="closeShop()">CONTINUE →</button>
   </div>
   <div class="shop-status-bar" style="z-index:10">
     <div class="status-item"><span class="si-label neon">NETWORK LATENCY</span><span class="si-value">12ms</span></div>
@@ -1098,7 +1098,7 @@ body::after {
     <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
   </div>
   <div class="rew-icon" id="rew-icon">🏆</div>
-  <div class="rew-title" id="rew-title">GÖREV<br>TAMAMLANDI!</div>
+  <div class="rew-title" id="rew-title">MISSION<br>COMPLETED!</div>
   <div class="rew-sub" id="rew-sub">OPERATION ANALYSIS: VERIFIED // REWARD DISPATCHING</div>
   <div class="rew-cards">
     <div class="rew-card">
@@ -1119,42 +1119,42 @@ body::after {
 
 <!-- Final screen -->
 <div class="fs-layer" id="scr-final" style="z-index:400;overflow-y:auto;padding-top:40px">
-  <div class="ch-num">TEBRİKLER — OYUN BİTTİ</div>
+  <div class="ch-num">CONGRATULATIONS — GAME OVER</div>
   <h1 style="font-family:Orbitron;font-size:clamp(1.4rem,4vw,2.4rem);font-weight:900;margin-bottom:14px">
-    <span style="color:var(--neon2)">GÖLGE ANALİST</span><br>
-    <span style="color:var(--neon)">OLARAK YETİŞTİN</span>
+    <span style="color:var(--neon2)">SHADOW ANALYST</span><br>
+    <span style="color:var(--neon)">STATUS AQUIRED</span>
   </h1>
   <div class="float-icon">🧑‍💻</div>
   <div class="final-stats" id="final-stats"></div>
   <div class="know-card">
-    <h3>🎓 ÖĞRENDİKLERİN</h3>
+    <h3>🎓 WHAT YOU'VE LEARNED</h3>
     <ul>
-      <li>Actor: Sistemi kullanan kişi, rol veya harici sistem</li>
-      <li>Use Case: Aktörün sistemde gerçekleştirdiği amaç/eylem</li>
-      <li>User Story: "Bir [Aktör] olarak, [Eylem] istiyorum, böylece [Fayda]"</li>
-      <li>&lt;&lt;include&gt;&gt;: Zorunlu bağımlılık — her zaman çalışır</li>
-      <li>&lt;&lt;extend&gt;&gt;: Opsiyonel genişletme — koşullu devreye girer</li>
-      <li>Use Case Diyagramı: Aktörler, oval use case'ler ve ilişki okları</li>
+      <li>Actor: The person, role, or external system using the system</li>
+      <li>Use Case: An actor's goal or action performed within the system</li>
+      <li>User Story: "As a(n) [Actor], I want to [Action], so that [Benefit]"</li>
+      <li>&lt;&lt;include&gt;&gt;: Mandatory dependency — executes every time</li>
+      <li>&lt;&lt;extend&gt;&gt;: Optional extension — executes conditionally</li>
+      <li>Use Case Diagram: Actors, oval use cases, and relationship arrows</li>
     </ul>
   </div>
   <div id="final-inventory" style="margin:10px 0"></div>
-  <div style="margin-top:24px"><button class="btn btn-neon btn-lg" onclick="restartGame()">🔄 TEKRAR OYNA</button></div>
+  <div style="margin-top:24px"><button class="btn btn-neon btn-lg" onclick="restartGame()">🔄 PLAY AGAIN</button></div>
 </div>
 
 <!-- ══ VICTORY ANIMATION SCREEN ══ -->
 <div class="fs-layer" id="scr-victory" style="z-index:420;background:#000;overflow:hidden;padding:0">
   <canvas id="victory-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
   <div id="victory-text" style="position:relative;z-index:10;text-align:center;padding:20px">
-    <div style="font-family:'Share Tech Mono';color:var(--neon);font-size:.8rem;letter-spacing:6px;text-transform:uppercase;opacity:0;animation:fadeInUp 1s ease .5s forwards" id="vt1">Görev Tamamlandı</div>
+    <div style="font-family:'Share Tech Mono';color:var(--neon);font-size:.8rem;letter-spacing:6px;text-transform:uppercase;opacity:0;animation:fadeInUp 1s ease .5s forwards" id="vt1">Mission Completed</div>
     <h1 style="font-family:'Orbitron';font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.1;margin:14px 0;opacity:0;animation:fadeInUp 1s ease 1.2s forwards">
-      <span style="color:var(--neon2)">GÖLGE</span><br>
-      <span style="color:var(--neon)">ANALİST</span>
+      <span style="color:var(--neon2)">SHADOW</span><br>
+      <span style="color:var(--neon)">ANALYST</span>
     </h1>
-    <div style="font-family:'Orbitron';font-size:.85rem;color:var(--gold);letter-spacing:3px;margin-bottom:8px;opacity:0;animation:fadeInUp .8s ease 2s forwards" id="vt3">⭐ UNVAN KAZANILDI ⭐</div>
+    <div style="font-family:'Orbitron';font-size:.85rem;color:var(--gold);letter-spacing:3px;margin-bottom:8px;opacity:0;animation:fadeInUp .8s ease 2s forwards" id="vt3">⭐ TITLE ACQUIRED ⭐</div>
     <div style="font-family:'Rajdhani';font-size:1rem;color:#8899bb;max-width:420px;margin:0 auto 30px;line-height:1.7;opacity:0;animation:fadeInUp .8s ease 2.6s forwards" id="vt4">
-      Karanlığın içinde analiz yapmasını öğrendin.<br>Sistem sınırlarını, aktörleri, senaryoları gördün.<br>Gölge Analist unvanı seni bekliyor.
+      You learned to analyze within the shadows.<br>You have seen system boundaries, actors, and scenarios.<br>The Shadow Analyst title awaits you.
     </div>
-    <button class="btn btn-gold btn-lg" onclick="showFinalStats()" style="opacity:0;animation:fadeInUp .8s ease 3.4s forwards">İSTATİSTİKLERİ GÖR →</button>
+    <button class="btn btn-gold btn-lg" onclick="showFinalStats()" style="opacity:0;animation:fadeInUp .8s ease 3.4s forwards">VIEW TELEMETRY →</button>
   </div>
 </div>
 
@@ -1827,42 +1827,42 @@ function startShopWalk(cb){
 //  GAME DATA
 // ══════════════════════════════════════════
 const SHOP_ITEMS = [
-  // BÖLÜM 1 items
-  { id:'headphones', name:'Gamer Kulaklık', icon:'🎧', price:400, desc:'Çoktan seçmeli sorular için destek.', tier:1, tierLabel:'B1',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Çoktan seçmeli (MC) sorularda ekranda "konsantrasyon ipucu" belirir — doğru cevabın hangi kategoride olduğuna dair analitik bilgi verir.', tag:'MC İpucu', tagType:'neon' }},
-  { id:'mousepad',   name:'RGB Mousepad',   icon:'🖱️', price:600, desc:'Sürükle-bırak sorular için destek.', tier:1, tierLabel:'B1',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Sürükle-bırak (DD) sorularında "ergonomi ipucu" belirir — Actor ve Use Case sınıflandırmasında yol gösterir.', tag:'DD İpucu', tagType:'neon' }},
-  { id:'keyboard',   name:'Mekanik Klavye', icon:'⌨️', price:900, desc:'User Story soruları için destek.', tier:1, tierLabel:'B1',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'User Story Builder sorularında "klavye ipucu" belirir — boşlukları hangi sırayla doldurmak gerektiğini gösterir.', tag:'SB İpucu', tagType:'neon' }},
-  { id:'webcam',     name:'4K Webcam',      icon:'📷', price:700, desc:'Müşteri jest analizi — Bölüm 1 için.', tier:1, tierLabel:'B1',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Ahmet Usta ve Selin Hanım sorularında yapay zeka jest analizi ipucu belirir — müşterinin ne kastettiğini söyler.', tag:'Müşteri İpucu', tagType:'neon' }},
-  // BÖLÜM 2 items
-  { id:'monitor2',   name:'Çift Monitör',   icon:'🖥️', price:2200, desc:'Her soru türü için referans ekran.', tier:2, tierLabel:'B2',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Tüm soru türlerinde ikinci ekranda referans doküman açılır. <<include>> ve <<extend>> farkını, Actor/Use Case tanımlarını anında gösterir.', tag:'Genel İpucu', tagType:'pink' }},
-  { id:'chair',      name:'Ergonomik Sandalye', icon:'🪑', price:1800, desc:'Hata cezasını azaltır.', tier:2, tierLabel:'B2',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Her yanlış cevapta uygulanacak para cezası %20\'den %15\'e düşer. Tüm bölümde aktif — yanlış yapsan bile daha az para kaybedersin.', tag:'Ceza -%5', tagType:'gold' }},
-  { id:'speaker',    name:'5+1 Ses Sistemi', icon:'🔊', price:2500, desc:'Mimar sorularında ses analizi.', tier:2, tierLabel:'B2',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Mimar\'ın konuşmalarındaki "bazen" ve "her zaman" gibi anahtar kelimeleri ses analizi ile yakalar ve soru sorulduğunda vurgular.', tag:'Mimar İpucu', tagType:'pink' }},
-  { id:'light',      name:'LED Pano Işığı',  icon:'💡', price:1500, desc:'User Story soruları için görsel destek.', tier:2, tierLabel:'B2',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'User Story Builder sorularında aydınlatma ipucu belirir — [Aktör]→[Eylem]→[Fayda] sırasını net gösterir.', tag:'SB İpucu', tagType:'gold' }},
-  // BÖLÜM 3 items
-  { id:'monitor3',   name:'Üçlü Monitör Seti', icon:'📺', price:6000, desc:'3 ekran — tüm soru türleri için güçlü destek.', tier:3, tierLabel:'B3',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Sol: teori, Orta: soru, Sağ: çözüm taslağı. Tüm soru türlerinde güçlü ipucu — yanlış seçenekleri elemen kolaylaşır.', tag:'Güçlü İpucu', tagType:'gold' }},
-  { id:'server',     name:'Kişisel Sunucu',  icon:'🖧',  price:8000, desc:'DD sorularında tam veritabanı taraması.', tier:3, tierLabel:'B3',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Sürükle-bırak sorularında sunucu Actor/Use Case veritabanını tarar: "Aktörler sistemin DIŞINDA, Use Case\'ler İÇİNDE" kuralını daima hatırlatır.', tag:'DD Güç İpucu', tagType:'neon' }},
-  { id:'desk',       name:'Akıllı Yükseklilik Ayarlı Masa', icon:'🗃️', price:5000, desc:'Hata cezasını azaltır.', tier:3, tierLabel:'B3',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Ergonomik Sandalye ile aynı bonus — hata cezası %20\'den %15\'e düşer. Sandalye yoksa bu masa da aynı etkiyi sağlar, ikisi birden yığılmaz.', tag:'Ceza -%5', tagType:'gold' }},
-  { id:'vr',         name:'VR Headset',      icon:'🥽', price:7000, desc:'Tüm sorularda genel güçlü ipucu.', tier:3, tierLabel:'B3',
-    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Use Case diyagramını 3D\'de modeller. Tüm soru türlerinde güçlü genel ipucu aktif — Actor oval dışarıda, Use Case dikdörtgen içeride kuralını 3D olarak gösterir.', tag:'3D İpucu', tagType:'gold' }},
+  // CHAPTER 1 items
+  { id:'headphones', name:'Gamer Headset', icon:'🎧', price:400, desc:'Assistance for multiple-choice questions.', tier:1, tierLabel:'C1',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'A "concentration hint" appears on screen during multiple choice (MC) questions — providing analytical data on the category of the right answer.', tag:'MC Hint', tagType:'neon' }},
+  { id:'mousepad',   name:'RGB Mousepad',   icon:'🖱️', price:600, desc:'Assistance for drag-and-drop questions.', tier:1, tierLabel:'C1',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'An "ergonomic hint" appears during drag-and-drop (DD) questions — guiding you in Actor and Use Case classification.', tag:'DD Hint', tagType:'neon' }},
+  { id:'keyboard',   name:'Mechanical Keyboard', icon:'⌨️', price:900, desc:'Assistance for User Story questions.', tier:1, tierLabel:'C1',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'A "keyboard hint" appears in User Story Builder questions — showing the exact order the blanks should be filled.', tag:'USB Hint', tagType:'neon' }},
+  { id:'webcam',     name:'4K Webcam',      icon:'📷', price:700, desc:'Client gesture analysis — for Chapter 1.', tier:1, tierLabel:'C1',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Provides AI gesture analysis during Baker Ahmet and Ms. Selin questions — telling you what the client actually means.', tag:'Client Hint', tagType:'neon' }},
+  // CHAPTER 2 items
+  { id:'monitor2',   name:'Dual Monitors',   icon:'🖥️', price:2200, desc:'Reference screen for all question types.', tier:2, tierLabel:'C2',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'A reference document opens on the secondary screen. Instantly shows the difference between <<include>> and <<extend>>, and Actor/Use Case definitions.', tag:'Gen Hint', tagType:'pink' }},
+  { id:'chair',      name:'Ergonomic Chair', icon:'🪑', price:1800, desc:'Reduces penalty for wrong answers.', tier:2, tierLabel:'C2',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Credit penalty for wrong answers drops from 20% to 15%. Active all chapter long.', tag:'Penalty -5%', tagType:'gold' }},
+  { id:'speaker',    name:'5.1 Sound System', icon:'🔊', price:2500, desc:'Voice analysis for Architect questions.', tier:2, tierLabel:'C2',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Captures keywords like "sometimes" or "always" via voice analysis during Architect dialogues and highlights them.', tag:'Arch Hint', tagType:'pink' }},
+  { id:'light',      name:'LED Panel Light',  icon:'💡', price:1500, desc:'Visual support for User Story questions.', tier:2, tierLabel:'C2',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'An illumination hint appears on User Story Builder questions — clearly showing the [Actor]→[Action]→[Benefit] sequence.', tag:'USB Hint', tagType:'gold' }},
+  // CHAPTER 3 items
+  { id:'monitor3',   name:'Triple Monitor Setup', icon:'📺', price:6000, desc:'3 screens — ultimate support across all questions.', tier:3, tierLabel:'C3',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Left: theory, Center: question, Right: draft solution. Powerful hint for all question types.', tag:'Power Hint', tagType:'gold' }},
+  { id:'server',     name:'Personal Server',  icon:'🖧',  price:8000, desc:'Full database scan for DD questions.', tier:3, tierLabel:'C3',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Scans the Actor/Use Case database during drag and drop questions: constantly reminds the rule "Actors OUTSIDE, Use Cases INSIDE".', tag:'DD Power', tagType:'neon' }},
+  { id:'desk',       name:'Smart Standing Desk', icon:'🗃️', price:5000, desc:'Reduces penalty for wrong answers.', tier:3, tierLabel:'C3',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Same bonus as the Ergonomic Chair — penalty drops from 20% to 15%. Does not stack with the chair.', tag:'Penalty -5%', tagType:'gold' }},
+  { id:'vr',         name:'VR Headset',      icon:'🥽', price:7000, desc:'Global powerful context hint.', tier:3, tierLabel:'C3',
+    advantage: { title:'IN-GAME ADVANTAGE', body:'Models the Use Case diagram in 3D. Active across all question types — vividly shows Actors outside the oval and Use Cases inside.', tag:'3D Hint', tagType:'gold' }},
 ];
 
 // Which tiers are available per chapter (1-indexed)
 const SHOP_TIER_PER_CHAPTER = { 0:1, 1:2, 2:3 }; // chapter index → tier
 
 const CHAPTERS = [
-  { num:'BÖLÜM 1', title:'Sıradan Başlangıçlar', sub:'Üniversiteden yeni mezunsun. Küçük ofisin var. Mahalledeki müşterilerle başla, temel analiz becerilerini geliştir.' },
-  { num:'BÖLÜM 2', title:'Gizemli Müşteri',       sub:'Gece yarısı kapı çalıyor. Siyah takım elbiseli, yüzü görünmeyen biri giriyor. "Mimar" diyor kendine.' },
-  { num:'BÖLÜM 3', title:'Büyük İhale',            sub:'Gizli cemiyetin en karmaşık sistemleri. Doğru modellemen her şeyi değiştirecek.' },
+  { num:'CHAPTER 1', title:'Humble Beginnings', sub:'Fresh out of college. Small office. Start with local clients, develop basic analysis skills.' },
+  { num:'CHAPTER 2', title:'The Mysterious Client', sub:'A knock on the door at midnight. A man in a black suit enters. He calls himself the "Architect".' },
+  { num:'CHAPTER 3', title:'The Big Contract', sub:'The most complex systems of the secret society. Modeling this right will change everything.' },
 ];
 
 // Per-chapter base reward (full score, no mistakes)
@@ -1871,114 +1871,114 @@ const CHAPTER_BASE_REWARD = [1800, 7000, 22000];
 const WRONG_PENALTY_PCT = 0.20; // 20% düşüş her hatalıda
 
 const MISSIONS = [
-  // ── BÖLÜM 0 ──
+  // ── CHAPTER 1 ──
   { ch:0, bg:0, npc:'baker',
-    lines:[{speaker:'AHMET USTA',color:'#ff8c00',text:'Selam evlat! Duydum sistem yapıyorsun.'},{speaker:'AHMET USTA',color:'#ff8c00',text:'Fırında stok takibini elle yapıyorum, zor oluyor.'},{speaker:'AHMET USTA',color:'#ff8c00',text:'Bana bir sistem analizi yapar mısın?'}],
-    concept:{title:'🎯 ACTOR & USE CASE NEDİR?',body:'Actor: Sistemi kullanan kişi/rol\n("Kim kullanıyor?")\n\nUse Case: Aktörün yaptığı eylem\n("Ne yapıyor?")'},
-    q:"Ahmet Usta'nın stok takip sisteminde ACTOR ve USE CASE'leri doğru sınıflandır:",
-    hint:"Actor = 'Kim kullanıyor?', Use Case = 'Ne yapıyor?'",
+    lines:[{speaker:'BAKER AHMET',color:'#ff8c00',text:'Hey kid! Heard you build systems.'},{speaker:'BAKER AHMET',color:'#ff8c00',text:"I track bakery stock manually, it's getting difficult."},{speaker:'BAKER AHMET',color:'#ff8c00',text:'Can you do a system analysis for me?'}],
+    concept:{title:'🎯 WHAT IS AN ACTOR & USE CASE?',body:'Actor: The person/role using the system\n("Who uses it?")\n\nUse Case: The action performed by the actor\n("What do they do?")'},
+    q:"Correctly classify ACTORS and USE CASES for Baker Ahmet's stock tracking system:",
+    hint:"Actor = 'Who uses it?', Use Case = 'What do they do?'",
     type:'dd',
-    items:[{id:'a1',l:'Fırıncı',t:'actor'},{id:'a2',l:'Depo Görevlisi',t:'actor'},{id:'u1',l:'Stok Görüntüle',t:'usecase'},{id:'u2',l:'Stok Güncelle',t:'usecase'},{id:'u3',l:'Rapor Al',t:'usecase'},{id:'u4',l:'Yeni Ürün Ekle',t:'usecase'}],
+    items:[{id:'a1',l:'Baker',t:'actor'},{id:'a2',l:'Warehouse Clerk',t:'actor'},{id:'u1',l:'View Stock',t:'usecase'},{id:'u2',l:'Update Stock',t:'usecase'},{id:'u3',l:'Generate Report',t:'usecase'},{id:'u4',l:'Add New Product',t:'usecase'}],
     ca:['a1','a2'],cu:['u1','u2','u3','u4'],
   },
   { ch:0, bg:0, npc:'librarian',
-    lines:[{speaker:'SELİN HANIM',color:'#4a90d9',text:'Merhaba... sen sistem işleri yapıyormuşsun, değil mi?'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'Kütüphanemizde üyeler kitap ödünç alıyor ama hep kağıt kalemle yapıyoruz, çok zor oluyor.'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'Bilmiyorum, belki bilgisayara geçebiliriz? Nasıl yazar bunu sen?'}],
-    concept:{title:'📝 USER STORY FORMATI',body:'"Bir [Aktör] olarak,\n[Eylem] istiyorum,\nböylece [Fayda] elde edeyim."'},
-    q:"Selin Hanım üyelerinin kitabı online alabilmesini istiyor. Bu isteği doğru User Story formatında hangisi ifade eder?",
-    hint:'Üç parça: Kim (üye), Ne yapmak (online ödünç al), Neden (kütüphaneye gitmeden).',
+    lines:[{speaker:'MS. SELIN',color:'#4a90d9',text:'Hello... you do software systems, right?'},{speaker:'MS. SELIN',color:'#4a90d9',text:"Our library members borrow books but we use pen and paper, it's very painful."},{speaker:'MS. SELIN',color:'#4a90d9',text:"I don't know, maybe we can move to a computer? How do you write that down?"}],
+    concept:{title:'📝 USER STORY FORMAT',body:'"As a(n) [Actor],\nI want to [Action],\nso that [Benefit]."'},
+    q:"Ms. Selin wants her members to borrow books online. Which one expresses this request in the correct User Story format?",
+    hint:'Three parts: Who (member), What to do (borrow online), Why (without visiting library).',
     type:'mc',
     choices:[
-      {id:'c1',text:'"Sistem kitapları takip etmeli ve bildirim göndermeli."',ok:false},
-      {id:'c2',text:'"Bir Kütüphane Üyesi olarak, online kitap ödünç almak istiyorum, böylece kütüphaneye gitmeden kitaba ulaşabileyim."',ok:true},
-      {id:'c3',text:'"Kütüphanede kitap ödünç alma işlemi bilgisayara aktarılacak."',ok:false},
-      {id:'c4',text:'"Kütüphaneci olarak kitap veritabanını görmek istiyorum."',ok:false},
+      {id:'c1',text:'"The system should track books and send notifications."',ok:false},
+      {id:'c2',text:'"As a Library Member, I want to borrow books online, so that I can access books without visiting the library."',ok:true},
+      {id:'c3',text:'"Borrowing books in the library will be transferred to computer."',ok:false},
+      {id:'c4',text:'"As a Librarian, I want to see the book database."',ok:false},
     ],
   },
   { ch:0, bg:0, npc:'gym',
-    lines:[{speaker:'MEHMET BEY',color:'#27ae60',text:'Analist kardeş! Spor salonuma sistem lazım.'},{speaker:'MEHMET BEY',color:'#27ae60',text:'Üyeler kayıt olacak, antrenörler program yapacak.'},{speaker:'MEHMET BEY',color:'#27ae60',text:'"Kayıt Ol" her çalıştığında e-posta doğrulama şart!'}],
-    concept:{title:'🔗 <<include>> İLİŞKİSİ',body:'Bir use case her çalıştığında\nbir başkası da zorunlu çalışırsa\n→ <<include>> kullan'},
-    q:'"Üye Kayıt Ol" her çalıştığında "E-posta Doğrulama" zorunlu çalışıyorsa, ilişki türü?',
-    hint:'Zorunlu/her zaman → <<include>>. Bazen/opsiyonel → <<extend>>.',
+    lines:[{speaker:'MR. MEHMET',color:'#27ae60',text:'Analyst friend! My gym needs a system.'},{speaker:'MR. MEHMET',color:'#27ae60',text:'Members will register, trainers will make schedules.'},{speaker:'MR. MEHMET',color:'#27ae60',text:'Every time "Register" runs, email verification is a must!'}],
+    concept:{title:'🔗 <<include>> RELATIONSHIP',body:'If a use case always triggers\nanother one when it runs\n→ use <<include>>'},
+    q:'If "Email Verification" must run every time "Member Registration" runs, what is the relationship type?',
+    hint:'Mandatory/always → <<include>>. Sometimes/optional → <<extend>>.',
     type:'mc',
     choices:[
-      {id:'c1',text:'<<extend>> — Opsiyonel genişletme',ok:false},
-      {id:'c2',text:'<<include>> — Zorunlu bağımlılık',ok:true},
-      {id:'c3',text:'Inheritance (Kalıtım)',ok:false},
-      {id:'c4',text:'Basit Association ilişkisi',ok:false},
+      {id:'c1',text:'<<extend>> — Optional extension',ok:false},
+      {id:'c2',text:'<<include>> — Mandatory dependency',ok:true},
+      {id:'c3',text:'Inheritance (Generalization)',ok:false},
+      {id:'c4',text:'Simple Association relationship',ok:false},
     ],
   },
-  // ── BÖLÜM 1 ──
+  // ── CHAPTER 2 ──
   { ch:1, bg:1, npc:'mimar',
-    lines:[{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'...Gölge üyelerimiz sisteme girdiğinde iz bırakmamalı.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Liderlerimiz her şeyi görmeli. Her şeyi.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'User Story yaz. Hata yaparsan... sonuçları olur.'}],
-    concept:{title:'🔒 GELİŞMİŞ USER STORY',body:'"Bir [Rol] olarak,\n[Ne yapmak] istiyorum,\nböylece [Neden/Fayda]."\n\nHer parça NET olmalı!'},
-    q:"Mimar'ın isteğine göre 'Gölge Üye' için doğru User Story'yi tamamla:",
-    hint:'"Gölge Üye" aktör, anonim giriş eylem, kimlik gizliliği fayda.',
+    lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'...Our shadow members must leave no trace when entering the system.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Our leaders must see everything. Everything.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Write the User Story. If you fail... there will be consequences.'}],
+    concept:{title:'🔒 ADVANCED USER STORY',body:'"As a(n) [Role],\nI want to [Action],\nso that [Reason/Benefit]."\n\nEach part must be CLEAR!'},
+    q:"Complete the correct User Story for the 'Shadow Member' based on the Architect's request:",
+    hint:'"Shadow Member" acts, anonymous login is the action, identity concealment is the benefit.',
     type:'sb',
-    template:['Bir ','BLANK_ACTOR',' olarak, ','BLANK_ACTION',' istiyorum, böylece ','BLANK_BENEFIT','.'],
+    template:['As a(n) ','BLANK_ACTOR',', I want to ','BLANK_ACTION',', so that ','BLANK_BENEFIT','.'],
     blanks:{
-      BLANK_ACTOR:{opts:['Gölge Üye','Sistem Yöneticisi','Lider','Misafir'],ok:'Gölge Üye'},
-      BLANK_ACTION:{opts:['sisteme anonim giriş yapmak','tüm üyeleri görmek','şifremi değiştirmek','rapor almak'],ok:'sisteme anonim giriş yapmak'},
-      BLANK_BENEFIT:{opts:['kimliğim açığa çıkmaz','daha hızlı çalışırım','para kazanırım','sistemi yönetirim'],ok:'kimliğim açığa çıkmaz'},
+      BLANK_ACTOR:{opts:['Shadow Member','System Admin','Leader','Guest'],ok:'Shadow Member'},
+      BLANK_ACTION:{opts:['login anonymously to the system','view all members','change my password','get a report'],ok:'login anonymously to the system'},
+      BLANK_BENEFIT:{opts:['my identity remains hidden','I can work faster','I earn money','I manage the system'],ok:'my identity remains hidden'},
     },
   },
   { ch:1, bg:1, npc:'mimar',
-    lines:[{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Üyelerimiz mesaj gönderir.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Bazen — sadece bazen — şifreleme isterler.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Bu opsiyonel ilişkiyi nasıl modellersin?'}],
-    concept:{title:'🔀 <<extend>> İLİŞKİSİ',body:'Opsiyonel senaryo:\nTemel use case\'e\nkoşullu eklenir.\n\n"Mesajı Şifrele" sadece\nbazen devreye girer.'},
-    q:'"Mesaj Gönder"e bazen eklenen "Mesajı Şifrele" için doğru Use Case ilişkisi?',
-    hint:'"Bazen", "opsiyonel" → <<extend>>.',
+    lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Our members send messages.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Sometimes — only sometimes — they want encryption.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'How do you model this optional relationship?'}],
+    concept:{title:'🔀 <<extend>> RELATIONSHIP',body:'Optional scenario:\nConditionally added to\nthe main use case.\n\n"Encrypt Message" only\nactivates sometimes.'},
+    q:'What is the correct Use Case relationship for "Encrypt Message" which is sometimes added to "Send Message"?',
+    hint:'"Sometimes", "optional" → <<extend>>.',
     type:'mc',
     choices:[
-      {id:'c1',text:'"Mesaj Gönder" <<include>> "Mesajı Şifrele"',ok:false},
-      {id:'c2',text:'"Mesajı Şifrele" <<extend>> "Mesaj Gönder"',ok:true},
-      {id:'c3',text:'İki Use Case bağımsız, ilişki yok',ok:false},
-      {id:'c4',text:'"Şifreci" adında yeni Actor eklenmeli',ok:false},
+      {id:'c1',text:'"Send Message" <<include>> "Encrypt Message"',ok:false},
+      {id:'c2',text:'"Encrypt Message" <<extend>> "Send Message"',ok:true},
+      {id:'c3',text:'The two Use Cases are independent, no relation',ok:false},
+      {id:'c4',text:'A new Actor named "Encryptor" must be added',ok:false},
     ],
   },
   { ch:1, bg:1, npc:'mimar',
-    lines:[{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Üç aktör var: Gölge Üye, Lider, Yönetici.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Giriş herkese ortak. Raporlar sadece Lider\'e.'},{speaker:'MİMAR',color:'#cc00ff',dark:true,text:'Doğru sınıfla analist.'}],
-    concept:{title:'👥 ÇOKLU AKTÖR',body:'Birden fazla aktör aynı\nuse case\'i kullanabilir.\n\nFakat özel use case\'ler\nsadece belirli aktöre ait olur.'},
-    q:'Sisteme dahil olacak aktörleri ve use case\'leri doğru sınıflandır:',
-    hint:'Giriş Yap → Herkese. Rapor Görüntüle → Sadece Lider.',
+    lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'There are three actors: Shadow Member, Leader, Admin.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Login is common for everyone. Reports are only for the Leader.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Classify them correctly, analyst.'}],
+    concept:{title:'👥 MULTIPLE ACTORS',body:'Multiple actors can typically\nuse the same use case.\n\nBut special use cases\nbelong strictly to a specific actor.'},
+    q:'Correctly classify the actors and use cases to be included into the system:',
+    hint:'Login → Everyone. View Reports → Only Leader.',
     type:'dd',
-    items:[{id:'a1',l:'Gölge Üye',t:'actor'},{id:'a2',l:'Lider',t:'actor'},{id:'u1',l:'Giriş Yap',t:'usecase'},{id:'u2',l:'Anonim Mesaj Gönder',t:'usecase'},{id:'u3',l:'Üye Raporlarını Gör',t:'usecase'},{id:'u4',l:'Sistem Denetimi',t:'usecase'}],
-    ca:['a1','a2'],cu:['u1','u2','u3','u4'],
+    items:[{id:'a1',l:'Shadow Member',t:'actor'},{id:'a2',l:'Leader',t:'actor'},{id:'a3',l:'System Admin',t:'actor'},{id:'u1',l:'Login',t:'usecase'},{id:'u2',l:'Send Anonymous Message',t:'usecase'},{id:'u3',l:'View Member Reports',t:'usecase'},{id:'u4',l:'System Audit',t:'usecase'}],
+    ca:['a1','a2','a3'],cu:['u1','u2','u3','u4'],
   },
-  // ── BÖLÜM 2 ──
+  // ── CHAPTER 3 ──
   { ch:2, bg:2, npc:'mimar',
-    lines:[{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Büyük İhale zamanı analist.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Tüm üyelik sistemini yeniden kuracağız.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Use Case ilişkilerini modellemen gerekiyor.'}],
-    concept:{title:'🏆 KAPSAMLI MODELLEME',body:'1. Tüm aktörleri belirle\n2. Her aktörün use case\'lerini listele\n3. <<include>> ve <<extend>> ekle\n4. Sistem sınırını çiz'},
-    q:'"Üye Girişi" her çalışmada "Oturum Kaydı" zorunlu; "2FA" sadece açıksa devreye giriyor. İki ilişki sırasıyla?',
-    hint:'Zorunlu → <<include>>, Koşullu → <<extend>>.',
+    lines:[{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'Time for the big contract, analyst.'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'We are going to rebuild the entire membership system.'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'You need to model the Use Case relationships.'}],
+    concept:{title:'🏆 COMPREHENSIVE MODELING',body:"1. Identify all actors\n2. List each actor's use cases\n3. Add <<include>> and <<extend>>\n4. Draw the system boundary"},
+    q:'"Member Login" requires "Session Log" every time; "2FA" activates only if enabled. The two relationships respectively?',
+    hint:'Mandatory → <<include>>, Conditional → <<extend>>.',
     type:'mc',
     choices:[
-      {id:'c1',text:'"Oturum Kaydı"=<<extend>>, "2FA"=<<include>>',ok:false},
-      {id:'c2',text:'İkisi de <<include>>',ok:false},
-      {id:'c3',text:'"Oturum Kaydı"=<<include>>, "2FA"=<<extend>>',ok:true},
-      {id:'c4',text:'İkisi de <<extend>>',ok:false},
+      {id:'c1',text:'"Session Log"=<<extend>>, "2FA"=<<include>>',ok:false},
+      {id:'c2',text:'Both are <<include>>',ok:false},
+      {id:'c3',text:'"Session Log"=<<include>>, "2FA"=<<extend>>',ok:true},
+      {id:'c4',text:'Both are <<extend>>',ok:false},
     ],
   },
   { ch:2, bg:2, npc:'mimar',
-    lines:[{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Son soru analist. Son.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'"Gölge Analist" unvanını hak etmek istiyorsan...'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Geçersiz User Story\'yi bul.'}],
-    concept:{title:'🎓 USER STORY ÖZET',body:'Geçerli User Story:\n1. Aktör NET belirtilmeli\n2. Eylem spesifik olmalı\n3. Fayda ölçülebilir olmalı'},
-    q:"Aşağıdakilerden hangisi GEÇERSİZ bir User Story?",
-    hint:"Geçerli User Story'de kim, ne, neden açıkça ve spesifik olmalı.",
+    lines:[{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'Last question, analyst. The last one.'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'If you want to earn the "Shadow Analyst" title...'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'Find the invalid User Story.'}],
+    concept:{title:'🎓 USER STORY SUMMARY',body:'Valid User Story:\n1. Actor MUST be CLEAR\n2. Action must be specific\n3. Benefit must be measurable'},
+    q:"Which of the following is an INVALID User Story?",
+    hint:"In a valid User Story, who, what, and why must be perfectly clear.",
     type:'mc',
     choices:[
-      {id:'c1',text:'"Bir Admin olarak, kullanıcı hesaplarını silmek istiyorum, böylece sistemi düzenli tutabilirim."',ok:false},
-      {id:'c2',text:'"Sistem kullanıcıları yönetmeli ve güncel tutmalı."',ok:true},
-      {id:'c3',text:'"Bir Müşteri olarak, sipariş geçmişimi görmek istiyorum, böylece alışverişlerimi takip edebilirim."',ok:false},
-      {id:'c4',text:'"Bir Analist olarak, gereksinimleri modellemek istiyorum, böylece ekip netlik kazanır."',ok:false},
+      {id:'c1',text:'"As an Admin, I want to delete user accounts, so that I can keep the system clean."',ok:false},
+      {id:'c2',text:'"The system should manage users and keep them updated."',ok:true},
+      {id:'c3',text:'"As a Customer, I want to see my order history, so that I can track my purchases."',ok:false},
+      {id:'c4',text:'"As an Analyst, I want to model requirements, so that the team gains clarity."',ok:false},
     ],
   },
   { ch:2, bg:2, npc:'mimar',
-    lines:[{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Son bir test daha analist.'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Aktörler ve use case\'leri tam belirleyebiliyor musun?'},{speaker:'MİMAR',color:'#ffd700',dark:true,text:'Bu sefer hata affedilmez.'}],
-    concept:{title:'🔮 KAPSAMLI USE CASE DİYAGRAMI',body:'Sistem sınırı içindeki\ntüm use case\'ler ve\ndışındaki aktörler\ndiyagramı oluşturur.'},
-    q:"Gizli Cemiyet İletişim Sistemi'nin tüm aktörlerini ve use case'lerini doğru sınıflandır:",
-    hint:'Aktörler sistemi kullanan roller, use case\'ler ise sistemde yapılan eylemlerdir.',
+    lines:[{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'One last test, analyst.'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'Can you comprehensively identify actors and use cases?'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'Failure is not an option this time.'}],
+    concept:{title:'🔮 COMPREHENSIVE USE CASE DIAGRAM',body:'All use cases inside\nthe system boundary and\nactors outside\nform the diagram.'},
+    q:"Correctly classify all actors and use cases of the Secret Society Communication System:",
+    hint:'Actors are roles using the system, use cases are the actions within.',
     type:'dd',
-    items:[{id:'a1',l:'Gölge Üye',t:'actor'},{id:'a2',l:'Lider',t:'actor'},{id:'a3',l:'Sistem Yöneticisi',t:'actor'},{id:'u1',l:'Anonim Giriş',t:'usecase'},{id:'u2',l:'Şifreli Mesaj Gönder',t:'usecase'},{id:'u3',l:'Kullanıcı Yönet',t:'usecase'},{id:'u4',l:'Sistem Denetimi',t:'usecase'},{id:'u5',l:'Üye Raporu Görüntüle',t:'usecase'}],
+    items:[{id:'a1',l:'Shadow Member',t:'actor'},{id:'a2',l:'Leader',t:'actor'},{id:'a3',l:'System Admin',t:'actor'},{id:'u1',l:'Anonymous Login',t:'usecase'},{id:'u2',l:'Send Encrypted Message',t:'usecase'},{id:'u3',l:'Manage Users',t:'usecase'},{id:'u4',l:'System Audit',t:'usecase'},{id:'u5',l:'View Member Report',t:'usecase'}],
     ca:['a1','a2','a3'],cu:['u1','u2','u3','u4','u5'],
-  },
+  }
 ];
 
 // ══════════════════════════════════════════
@@ -2294,7 +2294,7 @@ function renderMC(m){
     btn.onclick=()=>{
       document.querySelectorAll('.c-btn').forEach(b=>b.classList.remove('sel'));
       btn.classList.add('sel');
-      document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${ch.id}')">✓ ONAYLA</button>`;
+      document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${ch.id}')">✓ VERIFY</button>`;
     };
     list.appendChild(btn);
   });
@@ -2312,14 +2312,14 @@ function checkMC(sid){
     btn.classList.add('no');
     const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
     updatePotDisplay(base, GS.wrongCount);
-    fb.className='fb-box no';fb.textContent='❌ Yanlış! Kavramları tekrar düşün ve başka şık dene.';
+    fb.className='fb-box no';fb.textContent='❌ Incorrect! Think about the concepts and try another option.';
     document.getElementById('action-row').innerHTML='';
     document.querySelectorAll('.c-btn:not(.no)').forEach(b=>{
       b.onclick=()=>{
         const id=b.id.replace('cb-','');
         document.querySelectorAll('.c-btn:not(.no)').forEach(x=>x.classList.remove('sel'));
         b.classList.add('sel');
-        document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${id}')">✓ ONAYLA</button>`;
+        document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${id}')">✓ VERIFY</button>`;
       };
     });
     if(m.concept) offerHelp(m);
@@ -2334,7 +2334,7 @@ function renderDD(m){
   function rebuild(){
     ia.innerHTML=`
       <div style="font-size:.92rem;font-family:'Rajdhani';font-weight:600;color:var(--dim);margin-bottom:10px">
-        Kartları sürükleyerek doğru kategoriye bırak:
+        Drag and drop the cards into the correct category:
       </div>
       <div class="dd-pool" id="dd-pool"></div>
       <div class="dd-cols">
@@ -2413,7 +2413,7 @@ function ddSubmitBtn(m,aSlot,uSlot){
   const ar=document.getElementById('action-row');ar.innerHTML='';
   const hasAny=aSlot.length>0||uSlot.length>0;
   if(!hasAny) return;
-  const b=document.createElement('button');b.className='btn btn-neon';b.textContent='✓ ANALİZİ ONAYLA';
+  const b=document.createElement('button');b.className='btn btn-neon';b.textContent='✓ ACCEPT ANALYSIS';
   b.onclick=()=>{
     const aOk=m.ca.every(a=>aSlot.includes(a))&&aSlot.every(a=>m.ca.includes(a));
     const uOk=m.cu.every(u=>uSlot.includes(u))&&uSlot.every(u=>m.cu.includes(u));
@@ -2424,7 +2424,7 @@ function ddSubmitBtn(m,aSlot,uSlot){
       const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
       updatePotDisplay(base,GS.wrongCount);
       fb.className='fb-box no';
-      fb.textContent=`❌ Doğru değil! ${!aOk?"Actor listesi eksik/yanlış. ":""}${!uOk?"Use Case listesi eksik/yanlış. ":""}Tekrar dene.`;
+      fb.textContent=`❌ Not quite right! ${!aOk?"Actor list is missing/wrong. ":""}${!uOk?"Use Case list is missing/wrong. ":""}Try again.`;
       if(m.concept) offerHelp(m);
     }
   };
@@ -2440,7 +2440,7 @@ function renderSB(m){
     m.template.forEach(part=>{
       if(part.startsWith('BLANK_')){
         if(filled[part])html+=`<span class="sb-blank filled" onclick="clearSB('${part}')">${filled[part]} ✕</span>`;
-        else html+=`<span class="sb-blank">[seç]</span>`;
+        else html+=`<span class="sb-blank">[select]</span>`;
       }else{html+=part;}
     });
     html+='</div>';
@@ -2456,7 +2456,7 @@ function renderSB(m){
     });
     ia.innerHTML=html;
     const all=Object.values(filled).every(v=>v!==null);
-    document.getElementById('action-row').innerHTML=all?`<button class="btn btn-neon" onclick="checkSB()">✓ USER STORY'Yİ ONAYLA</button>`:'';
+    document.getElementById('action-row').innerHTML=all?`<button class="btn btn-neon" onclick="checkSB()">✓ VERIFY USER STORY</button>`:'';
   }
   window.fillSB=(k,v)=>{filled[k]=v;rebuild();};
   window.clearSB=(k)=>{filled[k]=null;rebuild();};
