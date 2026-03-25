@@ -102,13 +102,15 @@ body::after {
 .hud-new {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 0;
   flex: 1;
 }
 
 .hud-item {
   display: flex;
   flex-direction: column;
+  padding: 0 20px;
+  border-right: 1px solid var(--border);
 }
 
 .hi-label {
@@ -2030,7 +2032,8 @@ function startChapter(chIdx){
   document.getElementById('ch-sub').textContent=ch.sub;
   GS.currentChapter=chIdx;
   GS.chapterEarned=0;
-  document.getElementById('h-chap').textContent=`${chIdx+1} / 3`;
+  document.getElementById('h-chap').textContent=`PHASE: ${chIdx+1}`;
+  setActiveNav('Terminal');
   showLayer('scr-chapter');
 }
 function dismissChapter(){
@@ -2046,7 +2049,6 @@ function loadMission(idx){
   const m=MISSIONS[idx];
   const chMissions=missionsForChapter(m.ch);
   const mPosInCh=chMissions.indexOf(m)+1;
-  document.getElementById('h-mission').textContent=`${mPosInCh} / ${chMissions.length}`;
 
   // Base reward for this mission = chapter base / num missions in chapter
   const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/chMissions.length);
@@ -2822,7 +2824,7 @@ function showFinalStats(){
   if(victoryRaf){cancelAnimationFrame(victoryRaf);victoryRaf=null;}
   hideLayer('scr-victory');
   showLayer('scr-final');
-  document.getElementById('h-chap').textContent='✓ BİTTİ';
+  document.getElementById('h-chap').textContent='✓ COMPLETE';
   document.getElementById('final-stats').innerHTML=`
     <div class="fs-stat"><div class="fs-val">₺${GS.money.toLocaleString()}</div><div class="fs-lbl">Kalan Bakiye</div></div>
     <div class="fs-stat"><div class="fs-val">${GS.xp}</div><div class="fs-lbl">Toplam XP</div></div>
@@ -2881,6 +2883,15 @@ resizeCv();
 drawBg(0);
 updateHUD();
 setActiveNav('Terminal');
+
+// Sidebar navigation click handlers
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => {
+    const name = el.querySelector('span').textContent.toLowerCase();
+    setActiveNav(name);
+    if(name === 'archive') { showGuide(); }
+  });
+});
 </script>
 </body>
 </html>
