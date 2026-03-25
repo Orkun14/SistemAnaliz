@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shadow Analyst: The Use Case Detective</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=Rajdhani:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap');
 
 :root {
   --bg:#06060f; --card:#0d0d1c; --border:#1a1a30;
   --neon:#00f5ff; --neon2:#ff00aa; --neon3:#aaff00;
-  --gold:#ffd700; --text:#e2e8f0; --dim:#6b7b91;
+  --gold:#ffd700; --text:#c8d8e8; --dim:#4a5a72;
   --success:#00ff88; --danger:#ff3355; --warn:#ffaa00;
 }
 
@@ -19,7 +19,7 @@
 html, body {
   width:100%; height:100%; overflow:hidden;
   background:var(--bg); color:var(--text);
-  font-family:'Inter',sans-serif;
+  font-family:'Rajdhani',sans-serif;
 }
 
 /* Scanlines */
@@ -51,32 +51,35 @@ body::after {
 
 /* ─ Speech bubble ─ */
 #speech-wrap {
-  position:absolute; bottom:15%; left:50%; transform:translateX(-50%);
-  min-width:300px; max-width:55%; z-index:50;
+  position:absolute;
+  /* will be positioned dynamically via JS next to NPC head */
+  z-index:50;
   opacity:0; transition:opacity .3s; pointer-events:none;
+  max-width:340px; min-width:220px;
 }
 #speech-wrap.show { opacity:1; }
 .speech-bubble {
-  background:#fff; border-radius:18px 18px 18px 4px;
+  background:#fff; border-radius:16px 16px 16px 4px;
   padding:14px 18px; position:relative;
-  box-shadow:0 6px 30px rgba(0,0,0,.7);
+  box-shadow:0 6px 30px rgba(0,0,0,.8);
 }
+/* tail pointing left (toward NPC) */
 .speech-bubble::after {
-  content:''; position:absolute; bottom:-15px; left:32px;
-  border:9px solid transparent; border-top-color:#fff;
+  content:''; position:absolute; left:-14px; top:18px;
+  border:8px solid transparent; border-right-color:#fff;
 }
 .speech-bubble.dark {
-  background:#0b0b1e; border:1.5px solid var(--neon2);
+  background:#0d0b20; border:1.5px solid var(--neon2);
 }
-.speech-bubble.dark::after { border-top-color:#0b0b1e; }
+.speech-bubble.dark::after { border-right-color:#0d0b20; }
 .speech-spk {
-  font-family:'Orbitron'; font-size:.65rem; font-weight:900;
-  letter-spacing:1px; margin-bottom:5px;
+  font-family:'Orbitron'; font-size:.75rem; font-weight:900;
+  letter-spacing:1px; margin-bottom:6px;
 }
 .speech-txt {
-  font-family:'Inter', sans-serif; font-size:.9rem; color:#111; line-height:1.6;
+  font-family:'Rajdhani'; font-size:1rem; font-weight:600; color:#111; line-height:1.6;
 }
-.speech-bubble.dark .speech-txt { color:var(--text); }
+.speech-bubble.dark .speech-txt { color:#e8eeff; }
 #skip-btn {
   position:absolute; bottom:calc(15% - 36px); right:24px;
   background:rgba(0,0,0,.6); border:1px solid var(--dim);
@@ -100,104 +103,116 @@ body::after {
 #question-panel::-webkit-scrollbar { width:4px; }
 #question-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 
-.qp-inner { max-width:900px; margin:0 auto; }
+.qp-inner { max-width:960px; margin:0 auto; }
 
 .qp-row-top {
   display:flex; align-items:flex-start; gap:24px; margin-bottom:18px;
   flex-wrap:wrap;
 }
+/* concept card only shown when help is purchased or triggered */
 .concept-card {
-  flex:0 0 300px; background:rgba(0,245,255,.04);
-  border:1px solid rgba(0,245,255,.15); border-radius:8px;
-  padding:14px 16px; font-size:.85rem; line-height:1.6;
+  flex:0 0 320px; background:rgba(255,170,0,.06);
+  border:1px solid rgba(255,170,0,.3); border-radius:8px;
+  padding:14px 16px; font-size:.88rem; line-height:1.7;
 }
 .concept-card .cc-title {
-  font-family:'Orbitron'; font-size:.7rem; color:var(--neon);
+  font-family:'Orbitron'; font-size:.72rem; color:var(--warn);
   letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;
 }
-.concept-card .cc-body { white-space:pre-line; font-family:'Inter', sans-serif; }
+.concept-card .cc-body { white-space:pre-line; font-family:'Rajdhani'; font-size:.9rem; color:#e0d4b0; }
 
-.question-main { flex:1; }
+.question-main { flex:1; min-width:0; }
 .q-label {
-  font-family:'Orbitron'; font-size:.62rem; color:var(--neon);
-  letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;
+  font-family:'Orbitron'; font-size:.72rem; color:var(--neon);
+  letter-spacing:2px; text-transform:uppercase; margin-bottom:8px;
 }
 .q-reward-bar {
   display:flex; align-items:center; gap:10px; margin-bottom:10px;
 }
 .reward-pot {
-  font-family:'Orbitron'; font-size:1rem; color:var(--gold);
+  font-family:'Orbitron'; font-size:1.15rem; color:var(--gold);
   font-weight:700;
 }
-.reward-pot-label { font-size:.72rem; color:var(--dim); }
-.penalty-row { font-family:'Inter', sans-serif; font-size:.85rem; font-weight:600; color:var(--warn); margin-bottom:12px; }
+.reward-pot-label { font-size:.82rem; color:var(--dim); }
+.penalty-row { font-family:'Rajdhani'; font-size:.85rem; color:var(--warn); }
 .hint-box {
-  background:rgba(0,245,255,.05); border:1px solid rgba(0,245,255,.15);
-  border-radius:8px; padding:12px 16px; font-family:'Inter', sans-serif; font-size:.85rem; color:#a0b0c0;
-  margin-bottom:16px; line-height:1.5;
+  background:rgba(0,245,255,.05); border:1px solid rgba(0,245,255,.12);
+  border-radius:6px; padding:10px 14px; font-size:.9rem; color:var(--dim);
+  margin-bottom:12px;
 }
-.hint-box strong { color:var(--neon); letter-spacing:1px; }
+.hint-box strong { color:var(--neon); }
+
+/* help offer box - shown after wrong answer */
+.help-offer-box {
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:12px 16px; border-radius:8px; margin-bottom:12px;
+  border:1px solid rgba(255,170,0,.35); background:rgba(255,170,0,.06);
+}
+.help-offer-box .ho-text { font-family:'Rajdhani'; font-size:.92rem; color:#e0cc88; flex:1; }
+.help-offer-box .ho-cost { font-family:'Orbitron'; font-size:.78rem; color:var(--gold); white-space:nowrap; }
 
 .q-text {
-  font-family: 'Inter', sans-serif; font-size:1.1rem; font-weight:600; color:#fff; line-height:1.5;
-  margin-bottom:16px;
+  font-size:1.15rem; font-weight:700; color:#fff; line-height:1.55;
+  margin-bottom:18px;
 }
 
-/* choices */
-.choice-list { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+/* choices — bigger, more readable */
+.choice-list { display:flex; flex-direction:column; gap:10px; margin-bottom:14px; }
 .c-btn {
   display:flex; align-items:flex-start; gap:12px;
-  padding:12px 16px; border-radius:8px;
+  padding:13px 16px; border-radius:8px;
   border:1px solid var(--border); background:rgba(255,255,255,.03);
-  cursor:pointer; text-align:left; font-family:'Inter', sans-serif;
-  font-size:.95rem; color:var(--text); transition:all .2s; outline:none;
+  cursor:pointer; text-align:left; font-family:'Rajdhani';
+  font-size:1rem; color:var(--text); transition:all .18s; line-height:1.5;
 }
-.c-btn:hover, .c-btn:focus-visible { border-color:var(--neon); color:#fff; background:rgba(0,245,255,.05); transform:translateY(-2px); box-shadow:0 6px 16px rgba(0,0,0,.15); }
-.c-btn.sel { border-color:var(--neon); background:rgba(0,245,255,.08); color:#fff; }
-.c-btn.ok { border-color:var(--success); background:rgba(0,255,136,.08); color:var(--success); }
-.c-btn.no { border-color:var(--danger); background:rgba(255,51,85,.08); color:var(--danger); }
-.c-letter { font-family:'Orbitron'; font-size:.7rem; color:var(--neon); min-width:16px; margin-top:2px; flex-shrink:0; }
+.c-btn:hover { border-color:var(--neon); color:#fff; background:rgba(0,245,255,.06); }
+.c-btn.sel { border-color:var(--neon); background:rgba(0,245,255,.1); color:#fff; }
+.c-btn.ok { border-color:var(--success); background:rgba(0,255,136,.1); color:var(--success); }
+.c-btn.no { border-color:var(--danger); background:rgba(255,51,85,.1); color:var(--danger); opacity:.55; }
+.c-letter { font-family:'Orbitron'; font-size:.78rem; color:var(--neon); min-width:20px; margin-top:2px; flex-shrink:0; font-weight:900; }
 
-/* drag drop */
-.dd-pool { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+/* drag drop — neutral color chips (player must sort) */
+.dd-pool { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
 .dd-chip {
-  padding:8px 16px; border-radius:20px; font-size:.85rem; font-weight:500; font-family:'Inter', sans-serif;
-  cursor:pointer; border:1px solid; transition:all .2s; background:#0d0d1c; outline:none;
+  padding:9px 16px; border-radius:20px; font-size:.92rem; font-weight:600;
+  cursor:grab; border:1.5px solid var(--dim); color:#dde8f4;
+  transition:all .15s; background:rgba(255,255,255,.06);
+  user-select:none;
 }
-.dd-chip:hover, .dd-chip:focus-visible { transform:translateY(-3px); box-shadow:0 6px 14px currentColor; }
-.dd-chip.actor { border-color:var(--neon2); color:var(--neon2); }
-.dd-chip.usecase { border-color:var(--neon); color:var(--neon); }
-.dd-cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.dd-chip:hover { border-color:#fff; color:#fff; transform:scale(1.04); box-shadow:0 0 10px rgba(255,255,255,.2); }
+.dd-chip.dragging { opacity:.4; cursor:grabbing; }
+.dd-cols { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
 .dd-col {
-  background:rgba(255,255,255,.02); border:1px dashed var(--border);
-  border-radius:8px; padding:12px; min-height:80px; transition:border-color .3s;
+  background:rgba(0,0,0,.35); border:2px dashed var(--border);
+  border-radius:8px; padding:12px; min-height:80px;
+  transition:border-color .2s;
 }
-.dd-col:hover { border-color: rgba(255,255,255,.2); }
-.dd-col-title { font-family:'Orbitron'; font-size:.6rem; color:var(--dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; text-align:center; }
+.dd-col.drag-over { border-color:var(--neon); background:rgba(0,245,255,.05); }
+.dd-col-title { font-family:'Orbitron'; font-size:.68rem; color:var(--dim); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; text-align:center; }
 .placed {
-  display:inline-flex; align-items:center; gap:5px;
-  padding:5px 10px; border-radius:18px; font-size:.75rem; font-weight:600;
-  border:1px solid; margin:2px;
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 12px; border-radius:20px; font-size:.88rem; font-weight:600;
+  border:1.5px solid var(--dim); margin:3px; color:#dde8f4;
+  background:rgba(255,255,255,.06);
 }
-.placed.actor { border-color:var(--neon2); color:var(--neon2); background:rgba(255,0,170,.08); }
-.placed.usecase { border-color:var(--neon); color:var(--neon); background:rgba(0,245,255,.08); }
-.placed .x { cursor:pointer; opacity:.6; }
-.placed .x:hover { opacity:1; }
+.placed .x { cursor:pointer; opacity:.5; font-size:.8rem; }
+.placed .x:hover { opacity:1; color:var(--danger); }
 
 /* story builder */
 .sb-template {
   background:rgba(0,0,0,.3); border:1px solid var(--border);
-  border-radius:8px; padding:14px 16px;
-  font-family:'Share Tech Mono'; font-size:.85rem; line-height:2.5;
+  border-radius:8px; padding:16px 20px;
+  font-family:'Rajdhani'; font-size:1rem; font-weight:600; line-height:2.8; color:#dde8f4;
 }
 .sb-blank {
-  display:inline-block; min-width:120px; border-bottom:2px solid var(--neon);
-  color:var(--neon); padding:0 6px; cursor:pointer; text-align:center;
+  display:inline-block; min-width:130px; border-bottom:2px solid var(--neon);
+  color:var(--neon); padding:0 8px; cursor:pointer; text-align:center;
+  font-size:1rem;
 }
 .sb-blank.filled { color:var(--neon2); border-bottom-color:var(--neon2); }
-.sb-opts { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+.sb-opts { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
 .sb-opt {
-  padding:5px 12px; border-radius:15px; font-size:.76rem;
+  padding:7px 14px; border-radius:16px; font-size:.9rem; font-family:'Rajdhani'; font-weight:600;
   border:1px solid var(--dim); color:var(--text);
   cursor:pointer; transition:all .15s; background:rgba(0,0,0,.3);
 }
@@ -205,12 +220,12 @@ body::after {
 .sb-opt.used { opacity:.3; cursor:default; pointer-events:none; }
 
 /* feedback */
-.fb-box { padding:14px 18px; border-radius:8px; margin-bottom:16px; font-family:'Inter', sans-serif; font-size:.95rem; font-weight:500; line-height:1.5; display:none; transition:all 0.3s ease; }
-.fb-box.ok { display:block; border:1px solid var(--success); background:rgba(0,255,136,.08); color:var(--success); box-shadow:0 4px 12px rgba(0,255,136,.1); }
-.fb-box.no { display:block; border:1px solid var(--danger); background:rgba(255,51,85,.1); color:#ff6b81; box-shadow:0 4px 12px rgba(255,51,85,.15); }
+.fb-box { padding:12px 16px; border-radius:8px; margin-bottom:10px; font-size:.95rem; font-family:'Rajdhani'; font-weight:600; line-height:1.5; display:none; }
+.fb-box.ok { display:block; border:1px solid var(--success); background:rgba(0,255,136,.07); color:var(--success); }
+.fb-box.no { display:block; border:1px solid var(--danger); background:rgba(255,51,85,.07); color:var(--danger); }
 
 /* action row */
-.action-row { display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; }
+.action-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
 
 /* ─ FULLSCREEN OVERLAYS ─ */
 .fs-layer {
@@ -248,9 +263,9 @@ body::after {
 #scr-chapter {
   background:radial-gradient(ellipse at center, #0c0c22 0%, var(--bg) 70%);
 }
-.ch-num { font-family:'Share Tech Mono'; color:var(--neon); letter-spacing:4px; font-size:1rem; margin-bottom:12px; font-weight:700; }
-.ch-title { font-family:'Orbitron'; font-size:clamp(1.8rem,5vw,3.5rem); font-weight:900; color:#fff; margin-bottom:16px; text-shadow:0 0 16px rgba(0,245,255,.3); }
-.ch-sub { font-family:'Inter', sans-serif; color:#a0b0c0; max-width:550px; line-height:1.6; margin-bottom:32px; font-size:1.05rem; }
+.ch-num { font-family:'Share Tech Mono'; color:var(--neon); letter-spacing:4px; font-size:.8rem; margin-bottom:10px; }
+.ch-title { font-family:'Orbitron'; font-size:clamp(1.6rem,4vw,3rem); font-weight:900; color:#fff; margin-bottom:14px; }
+.ch-sub { color:var(--dim); max-width:500px; line-height:1.7; margin-bottom:30px; font-size:.92rem; }
 
 /* Shop screen */
 #scr-shop {
@@ -264,49 +279,69 @@ body::after {
   margin-bottom:22px;
 }
 .shop-grid {
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr));
-  gap:16px; max-width:900px; width:100%; margin:0 auto 24px;
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr));
+  gap:16px; max-width:960px; width:100%; margin:0 auto 24px;
 }
 .shop-item {
-  background:var(--card); border:1px solid var(--border); border-radius:10px;
-  padding:18px; text-align:center; transition:all .2s; cursor:pointer;
-  position:relative; overflow:hidden;
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:20px 16px; text-align:center; transition:all .22s; cursor:pointer;
+  position:relative; overflow:visible;
 }
 .shop-item:hover:not(.bought):not(.cant) {
-  border-color:var(--neon); transform:translateY(-2px); box-shadow:0 0 18px rgba(0,245,255,.15);
+  border-color:var(--neon); transform:translateY(-3px); box-shadow:0 0 22px rgba(0,245,255,.18);
 }
 .shop-item.bought {
-  border-color:rgba(0,255,136,.3); background:rgba(0,255,136,.04); cursor:default;
+  border-color:rgba(0,255,136,.35); background:rgba(0,255,136,.04); cursor:default;
 }
 .shop-item.cant { opacity:.45; cursor:not-allowed; }
-.shop-item .si-icon { font-size:2.4rem; margin-bottom:8px; }
-.shop-item .si-name { font-family:'Orbitron'; font-size:.72rem; color:#fff; margin-bottom:6px; font-weight:700; letter-spacing:.5px; }
-.shop-item .si-desc { font-size:.72rem; color:var(--dim); margin-bottom:10px; line-height:1.4; }
-.shop-item .si-price { font-family:'Share Tech Mono'; font-size:.88rem; color:var(--gold); }
+.shop-item .si-icon { font-size:2.6rem; margin-bottom:10px; }
+.shop-item .si-name { font-family:'Orbitron'; font-size:.74rem; color:#fff; margin-bottom:6px; font-weight:700; letter-spacing:.5px; }
+.shop-item .si-desc { font-size:.78rem; color:var(--dim); margin-bottom:12px; line-height:1.5; }
+.shop-item .si-price { font-family:'Orbitron'; font-size:.92rem; color:var(--gold); }
 .shop-item.bought .si-price { color:var(--success); }
 .shop-item .si-tier { position:absolute; top:8px; right:10px; font-family:'Orbitron'; font-size:.55rem; letter-spacing:1px; }
-.tier-b1 { color:rgba(0,245,255,.6); }
-.tier-b2 { color:rgba(255,0,170,.6); }
+.tier-b1 { color:rgba(0,245,255,.7); }
+.tier-b2 { color:rgba(255,0,170,.7); }
 .tier-b3 { color:var(--gold); }
+
+/* Hover advantage panel */
+.si-advantage {
+  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:#0a0a1e; border:1.5px solid var(--neon);
+  border-radius:10px; padding:12px 14px; width:240px;
+  box-shadow:0 0 24px rgba(0,245,255,.2);
+  display:none; z-index:600; pointer-events:none; text-align:left;
+}
+.shop-item:hover:not(.cant) .si-advantage { display:block; }
+.si-adv-title { font-family:'Orbitron'; font-size:.62rem; color:var(--neon); letter-spacing:1px; text-transform:uppercase; margin-bottom:7px; }
+.si-adv-body { font-family:'Rajdhani'; font-size:.88rem; color:#c8dce8; line-height:1.55; }
+.si-adv-tag {
+  display:inline-block; margin-top:8px; padding:3px 10px;
+  border-radius:12px; font-family:'Orbitron'; font-size:.6rem; font-weight:700; letter-spacing:.5px;
+}
+.adv-tag-gold { background:rgba(255,215,0,.12); color:var(--gold); border:1px solid rgba(255,215,0,.3); }
+.adv-tag-neon { background:rgba(0,245,255,.08); color:var(--neon); border:1px solid rgba(0,245,255,.2); }
+.adv-tag-pink { background:rgba(255,0,170,.08); color:var(--neon2); border:1px solid rgba(255,0,170,.2); }
+
 .shop-buy-btn {
-  display:inline-block; margin-top:6px; padding:6px 16px;
-  border:1px solid var(--neon); border-radius:4px; color:var(--neon);
-  font-family:'Orbitron'; font-size:.65rem; cursor:pointer;
+  display:inline-block; margin-top:8px; padding:8px 18px;
+  border:1.5px solid var(--neon); border-radius:6px; color:var(--neon);
+  font-family:'Orbitron'; font-size:.68rem; cursor:pointer;
   background:transparent; transition:all .2s;
 }
-.shop-buy-btn:hover { background:var(--neon); color:var(--bg); }
+.shop-buy-btn:hover { background:var(--neon); color:var(--bg); box-shadow:0 0 12px var(--neon); }
 .shop-item.cant .shop-buy-btn { pointer-events:none; border-color:var(--dim); color:var(--dim); }
-.shop-bought-badge { color:var(--success); font-family:'Orbitron'; font-size:.65rem; margin-top:6px; }
+.shop-bought-badge { color:var(--success); font-family:'Orbitron'; font-size:.68rem; margin-top:8px; }
 
 /* Reward/Success popup */
 #scr-reward {
   background:rgba(6,6,15,.92);
 }
 .rew-icon { font-size:4rem; margin:14px 0; }
-.rew-title { font-family:'Orbitron'; font-size:1.8rem; font-weight:900; margin-bottom:10px; color:#fff; text-shadow:0 0 12px rgba(255,215,0,.3); }
-.rew-sub { font-family:'Inter', sans-serif; color:#cbd5e1; max-width:460px; line-height:1.6; margin-bottom:14px; font-size:1rem; }
-.rew-earn { font-family:'Share Tech Mono'; font-size:1.5rem; color:var(--gold); margin-bottom:8px; font-weight:700; text-shadow:0 0 10px rgba(255,215,0,.4); }
-.rew-penalty { font-family:'Inter', sans-serif; font-size:.9rem; font-weight:600; color:#ff6b81; margin-bottom:24px; }
+.rew-title { font-family:'Orbitron'; font-size:1.6rem; font-weight:900; margin-bottom:8px; }
+.rew-sub { color:var(--dim); max-width:420px; line-height:1.6; margin-bottom:10px; font-size:.9rem; }
+.rew-earn { font-family:'Share Tech Mono'; font-size:1.3rem; color:var(--gold); margin-bottom:6px; }
+.rew-penalty { font-family:'Share Tech Mono'; font-size:.82rem; color:var(--danger); margin-bottom:20px; }
 
 /* Final screen */
 #scr-final { background:radial-gradient(ellipse at 50% 30%, #0c0c22 0%, var(--bg) 70%); }
@@ -314,24 +349,22 @@ body::after {
 .fs-stat { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px 24px; }
 .fs-val { font-family:'Orbitron'; font-size:1.4rem; color:var(--gold); }
 .fs-lbl { font-size:.7rem; color:var(--dim); letter-spacing:1px; text-transform:uppercase; margin-top:3px; }
-.know-card { background:var(--card); border:1px solid rgba(0,245,255,.2); border-radius:8px; padding:20px 24px; max-width:680px; margin:20px auto; text-align:left; font-family:'Inter', sans-serif; box-shadow:0 8px 24px rgba(0,0,0,.3); }
-.know-card h3 { font-family:'Orbitron'; font-size:.9rem; color:var(--neon); letter-spacing:2px; margin-bottom:12px; }
+.know-card { background:var(--card); border:1px solid rgba(0,245,255,.2); border-radius:8px; padding:18px; max-width:680px; margin:16px auto; text-align:left; }
+.know-card h3 { font-family:'Orbitron'; font-size:.8rem; color:var(--neon); letter-spacing:2px; margin-bottom:10px; }
 .know-card ul { list-style:none; }
-.know-card ul li { padding:8px 0; font-size:.95rem; line-height:1.6; border-bottom:1px solid var(--border); display:flex; gap:10px; color:#d1d5db; }
-.know-card ul li:last-child { border-bottom:none; }
-.know-card ul li::before { content:'▸'; color:var(--neon); flex-shrink:0; font-size:1.1rem; }
+.know-card ul li { padding:5px 0; font-size:.84rem; border-bottom:1px solid var(--border); display:flex; gap:8px; }
+.know-card ul li::before { content:'▸'; color:var(--neon); flex-shrink:0; }
 
 /* BUTTONS */
 .btn {
   display:inline-block; padding:12px 32px;
-  font-family:'Orbitron'; font-size:.85rem; font-weight:700; outline:none;
+  font-family:'Orbitron'; font-size:.82rem; font-weight:700;
   text-transform:uppercase; letter-spacing:2px;
-  border:2px solid; border-radius:6px; cursor:pointer;
+  border:2px solid; border-radius:4px; cursor:pointer;
   transition:all .2s; background:transparent;
 }
-.btn:hover, .btn:focus-visible { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,.3); }
 .btn-neon { border-color:var(--neon); color:var(--neon); }
-.btn-neon:hover, .btn-neon:focus-visible { background:var(--neon); color:var(--bg); box-shadow:0 0 20px var(--neon); }
+.btn-neon:hover { background:var(--neon); color:var(--bg); box-shadow:0 0 20px var(--neon); }
 .btn-gold { border-color:var(--gold); color:var(--gold); }
 .btn-gold:hover { background:var(--gold); color:var(--bg); box-shadow:0 0 20px var(--gold); }
 .btn-pink { border-color:var(--neon2); color:var(--neon2); }
@@ -530,7 +563,27 @@ body::after {
   <div style="margin-top:24px"><button class="btn btn-neon btn-lg" onclick="restartGame()">🔄 TEKRAR OYNA</button></div>
 </div>
 
+<!-- ══ VICTORY ANIMATION SCREEN ══ -->
+<div class="fs-layer" id="scr-victory" style="z-index:420;background:#000;overflow:hidden;padding:0">
+  <canvas id="victory-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+  <div id="victory-text" style="position:relative;z-index:10;text-align:center;padding:20px">
+    <div style="font-family:'Share Tech Mono';color:var(--neon);font-size:.8rem;letter-spacing:6px;text-transform:uppercase;opacity:0;animation:fadeInUp 1s ease .5s forwards" id="vt1">Görev Tamamlandı</div>
+    <h1 style="font-family:'Orbitron';font-size:clamp(2rem,5vw,3.8rem);font-weight:900;line-height:1.1;margin:14px 0;opacity:0;animation:fadeInUp 1s ease 1.2s forwards">
+      <span style="color:var(--neon2)">GÖLGE</span><br>
+      <span style="color:var(--neon)">ANALİST</span>
+    </h1>
+    <div style="font-family:'Orbitron';font-size:.85rem;color:var(--gold);letter-spacing:3px;margin-bottom:8px;opacity:0;animation:fadeInUp .8s ease 2s forwards" id="vt3">⭐ UNVAN KAZANILDI ⭐</div>
+    <div style="font-family:'Rajdhani';font-size:1rem;color:#8899bb;max-width:420px;margin:0 auto 30px;line-height:1.7;opacity:0;animation:fadeInUp .8s ease 2.6s forwards" id="vt4">
+      Karanlığın içinde analiz yapmasını öğrendin.<br>Sistem sınırlarını, aktörleri, senaryoları gördün.<br>Gölge Analist unvanı seni bekliyor.
+    </div>
+    <button class="btn btn-gold btn-lg" onclick="showFinalStats()" style="opacity:0;animation:fadeInUp .8s ease 3.4s forwards">İSTATİSTİKLERİ GÖR →</button>
+  </div>
+</div>
+
 </div><!-- end #root -->
+<style>
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+</style>
 
 <script>
 // ══════════════════════════════════════════
@@ -553,84 +606,252 @@ function drawBg(idx) {
 }
 
 function drawRoom0(g,W,H){
-  const wg=g.createLinearGradient(0,0,0,H);wg.addColorStop(0,'#130e22');wg.addColorStop(1,'#090614');
-  g.fillStyle=wg;g.fillRect(0,0,W,H);
-  g.fillStyle='#0e0a18';g.fillRect(0,H*.66,W,H*.34);
-  g.fillStyle='#1c1332';g.fillRect(0,H*.655,W,4);
-  for(let x=0;x<W;x+=52){g.strokeStyle='rgba(80,50,140,.1)';g.lineWidth=1;g.beginPath();g.moveTo(x,H*.66);g.lineTo(x,H);g.stroke();}
-  // window
-  g.fillStyle='#081420';g.fillRect(W*.04,H*.07,W*.14,H*.35);
-  g.strokeStyle='#261c40';g.lineWidth=2.5;g.strokeRect(W*.04,H*.07,W*.14,H*.35);
-  g.fillStyle='rgba(0,50,120,.12)';g.fillRect(W*.04,H*.07,W*.14,H*.35);
-  g.strokeStyle='#261c40';g.lineWidth=1.5;
-  g.beginPath();g.moveTo(W*.11,H*.07);g.lineTo(W*.11,H*.42);g.stroke();
-  g.beginPath();g.moveTo(W*.04,H*.245);g.lineTo(W*.18,H*.245);g.stroke();
-  [[W*.06,H*.1],[W*.09,H*.08],[W*.15,H*.13],[W*.07,H*.2]].forEach(([sx,sy])=>{g.fillStyle='rgba(180,180,255,.5)';g.beginPath();g.arc(sx,sy,1.2,0,Math.PI*2);g.fill();});
-  // desk
-  g.fillStyle='#1e1509';g.fillRect(W*.22,H*.53,W*.5,H*.13);
-  g.fillStyle='#2e200e';g.fillRect(W*.22,H*.53,W*.5,4);
-  // single monitor
-  g.fillStyle='#111';g.fillRect(W*.34,H*.32,W*.13,H*.21);
-  g.fillStyle='#081828';g.fillRect(W*.35,H*.33,W*.11,H*.18);
-  g.save();g.shadowColor='#00f5ff';g.shadowBlur=14;g.fillStyle='rgba(0,200,255,.16)';g.fillRect(W*.35,H*.33,W*.11,H*.18);g.restore();
-  g.fillStyle='#181818';g.fillRect(W*.395,H*.53,W*.022,H*.03);
-  // coffee mug
-  g.fillStyle='#e0e0e0';g.fillRect(W*.67,H*.5,W*.024,H*.04);
-  g.fillStyle='#5a3010';g.fillRect(W*.672,H*.51,W*.02,H*.025);
-  // plant
-  g.fillStyle='#1c1000';g.fillRect(W*.79,H*.55,W*.034,H*.1);
-  g.fillStyle='#1a4010';g.beginPath();g.arc(W*.807,H*.49,W*.024,0,Math.PI*2);g.fill();
-  g.fillStyle='#2a6020';g.beginPath();g.arc(W*.802,H*.47,W*.016,0,Math.PI*2);g.fill();
-  // neon sign
-  g.save();g.shadowColor='#00f5ff';g.shadowBlur=18;
+  // ── GÜNDÜZ: Krem duvarlı, aydınlık oda ──
+  // Warm cream wall
+  const wallG=g.createLinearGradient(0,0,0,H*.66);
+  wallG.addColorStop(0,'#e8dfc8');wallG.addColorStop(1,'#d8ccb0');
+  g.fillStyle=wallG;g.fillRect(0,0,W,H*.66);
+  // Warm wood floor
+  const floorG=g.createLinearGradient(0,H*.66,0,H);
+  floorG.addColorStop(0,'#5a3e20');floorG.addColorStop(1,'#3d2810');
+  g.fillStyle=floorG;g.fillRect(0,H*.66,W,H*.34);
+  // Wall/floor divider baseboard
+  g.fillStyle='#8a6a3a';g.fillRect(0,H*.655,W,10);
+  g.fillStyle='#c8a870';g.fillRect(0,H*.655,W,3);
+  // Floor planks
+  for(let x=0;x<W;x+=W*.07){g.strokeStyle='rgba(0,0,0,.12)';g.lineWidth=1;g.beginPath();g.moveTo(x,H*.67);g.lineTo(x,H);g.stroke();}
+  // Ceiling strip
+  g.fillStyle='#f0e8d0';g.fillRect(0,0,W,H*.04);
+  g.fillStyle='#c8b890';g.fillRect(0,H*.04,W,3);
+
+  // ── 4 WINDOWS with bright blue sky ──
+  const wins=[{x:W*.03,w:W*.14},{x:W*.2,w:W*.12},{x:W*.35,w:W*.12},{x:W*.5,w:W*.1}];
+  wins.forEach(({x:wx,w:ww},wi)=>{
+    // Window recess shadow
+    g.fillStyle='rgba(0,0,0,.08)';g.fillRect(wx-4,H*.03,ww+8,H*.42);
+    // Sky gradient
+    const skyG=g.createLinearGradient(wx,H*.04,wx,H*.44);
+    skyG.addColorStop(0,'#4a9fdf');skyG.addColorStop(.5,'#7bc4f4');skyG.addColorStop(1,'#c8ecff');
+    g.fillStyle=skyG;g.fillRect(wx,H*.04,ww,H*.4);
+    // Sun on first window
+    if(wi===0){
+      g.save();g.shadowColor='#fff4a0';g.shadowBlur=20;
+      g.fillStyle='#fffac0';g.beginPath();g.arc(wx+ww*.65,H*.1,ww*.11,0,Math.PI*2);g.fill();
+      g.restore();
+      // Sun rays
+      g.save();g.globalAlpha=.12;g.strokeStyle='#ffee80';g.lineWidth=2;
+      for(let a=0;a<Math.PI*2;a+=Math.PI/6){g.beginPath();g.moveTo(wx+ww*.65,H*.1);g.lineTo(wx+ww*.65+Math.cos(a)*ww*.3,H*.1+Math.sin(a)*H*.15);g.stroke();}
+      g.restore();
+    }
+    // Clouds
+    [[.15,.2],[.55,.28],[.3,.42]].forEach(([cx2,cy2])=>{
+      g.fillStyle='rgba(255,255,255,.9)';
+      g.beginPath();g.ellipse(wx+ww*cx2,H*cy2,ww*.12,H*.022,0,0,Math.PI*2);g.fill();
+      g.beginPath();g.ellipse(wx+ww*cx2+ww*.05,H*cy2-H*.013,ww*.08,H*.017,0,0,Math.PI*2);g.fill();
+    });
+    // Light spill on wall below window
+    const spill=g.createRadialGradient(wx+ww*.5,H*.44,0,wx+ww*.5,H*.44,ww*1.2);
+    spill.addColorStop(0,'rgba(220,240,255,.18)');spill.addColorStop(1,'transparent');
+    g.fillStyle=spill;g.fillRect(wx-ww*.3,H*.44,ww*1.6,H*.22);
+    // Window frame (wooden, warm)
+    g.strokeStyle='#8a6a3a';g.lineWidth=3;g.strokeRect(wx,H*.04,ww,H*.4);
+    // Cross bars
+    g.lineWidth=2;
+    g.beginPath();g.moveTo(wx+ww*.5,H*.04);g.lineTo(wx+ww*.5,H*.44);g.stroke();
+    g.beginPath();g.moveTo(wx,H*.21);g.lineTo(wx+ww,H*.21);g.stroke();
+    // Window sill
+    g.fillStyle='#a08050';g.fillRect(wx-4,H*.44,ww+8,8);
+  });
+
+  // Sunlight beam across floor
+  const beam=g.createLinearGradient(W*.03,H*.44,W*.2,H*.7);
+  beam.addColorStop(0,'rgba(255,240,180,.15)');beam.addColorStop(1,'transparent');
+  g.fillStyle=beam;g.beginPath();g.moveTo(W*.03,H*.44);g.lineTo(W*.17,H*.44);g.lineTo(W*.28,H*.7);g.lineTo(W*.0,H*.7);g.closePath();g.fill();
+
+  // ── Desk ──
+  g.fillStyle='#6a4820';g.fillRect(W*.22,H*.53,W*.5,H*.13);
+  g.fillStyle='#8a6030';g.fillRect(W*.22,H*.53,W*.5,5);
+  g.fillStyle='#5a3810';[-1,1].forEach(s=>{g.fillRect(W*.22+(s<0?0:W*.5-8),H*.6,8,H*.08);});
+  // Monitor
+  g.fillStyle='#2a2a2a';g.fillRect(W*.34,H*.32,W*.13,H*.21);
+  g.fillStyle='#1a2c3c';g.fillRect(W*.35,H*.33,W*.11,H*.18);
+  g.save();g.shadowColor='#00c8ff';g.shadowBlur=10;g.fillStyle='rgba(0,180,255,.1)';g.fillRect(W*.35,H*.33,W*.11,H*.18);g.restore();
+  g.fillStyle='#3a3a3a';g.fillRect(W*.395,H*.53,W*.022,H*.03);
+  // Monitor base
+  g.fillStyle='#2a2a2a';g.fillRect(W*.375,H*.535,W*.06,4);
+  // Coffee mug
+  g.fillStyle='#f0f0f0';g.fillRect(W*.67,H*.5,W*.024,H*.04);g.fillStyle='#5a3010';g.fillRect(W*.672,H*.51,W*.02,H*.025);
+  g.fillStyle='rgba(180,100,40,.4)';g.fillRect(W*.672,H*.505,W*.02,4);
+  // Plant
+  g.fillStyle='#3c2200';g.fillRect(W*.79,H*.55,W*.034,H*.1);
+  g.fillStyle='#2a5a18';g.beginPath();g.arc(W*.807,H*.49,W*.026,0,Math.PI*2);g.fill();
+  g.fillStyle='#3a7a24';g.beginPath();g.arc(W*.802,H*.47,W*.018,0,Math.PI*2);g.fill();
+  g.fillStyle='#4a9030';g.beginPath();g.arc(W*.812,H*.468,W*.012,0,Math.PI*2);g.fill();
+  // Wall art / neon sign (daylight-dimmed)
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=6;g.globalAlpha=.5;
   g.strokeStyle='#00f5ff';g.lineWidth=1.5;g.strokeRect(W*.85,H*.08,W*.12,H*.2);
-  g.fillStyle='rgba(0,245,255,.05)';g.fillRect(W*.85,H*.08,W*.12,H*.2);
   g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#00f5ff';g.textAlign='center';
   g.fillText('SYS',W*.91,H*.18);g.fillText('PRO',W*.91,H*.265);g.restore();
+  // Bookshelf on wall
+  g.fillStyle='#8a6030';g.fillRect(W*.65,H*.1,W*.18,H*.3);
+  g.fillStyle='#6a4820';g.fillRect(W*.65,H*.1,W*.18,4);g.fillRect(W*.65,H*.4,W*.18,4);
+  [[W*.66,'#c04040',H*.13],[W*.685,'#4060c0',H*.15],[W*.71,'#40a040',H*.12],[W*.735,'#c08040',H*.14],
+   [W*.66,'#8040c0',H*.25],[W*.685,'#c08080',H*.23],[W*.71,'#40c0c0',H*.26],[W*.735,'#c0c040',H*.24]].forEach(([bx,bc,by])=>{
+    g.fillStyle=bc;g.fillRect(bx,by,0.022*W,H*.11);
+    g.fillStyle='rgba(255,255,255,.15)';g.fillRect(bx,by,0.022*W,4);
+  });
 }
 
 function drawRoom1(g,W,H){
-  const wg=g.createLinearGradient(0,0,0,H);wg.addColorStop(0,'#06050d');wg.addColorStop(1,'#030207');
-  g.fillStyle=wg;g.fillRect(0,0,W,H);
-  g.fillStyle='#0b0916';g.fillRect(0,H*.66,W,H*.34);
-  g.fillStyle='#14082a';g.fillRect(0,H*.655,W,4);
-  for(let x=0;x<W;x+=52){g.strokeStyle='rgba(255,0,170,.05)';g.lineWidth=1;g.beginPath();g.moveTo(x,H*.66);g.lineTo(x,H);g.stroke();}
-  // rainy window
-  g.fillStyle='#070c16';g.fillRect(W*.03,H*.05,W*.16,H*.38);
-  g.strokeStyle='#15183a';g.lineWidth=2.5;g.strokeRect(W*.03,H*.05,W*.16,H*.38);
-  for(let i=0;i<10;i++){const rx=W*.04+i*W*.014;g.strokeStyle='rgba(70,90,180,.2)';g.lineWidth=1;g.beginPath();g.moveTo(rx,H*.06);g.lineTo(rx-3,H*.41);g.stroke();}
-  // desk
+  // ── GECE: Loş ama görünür — slate-blue duvar, mum ışığı ──
+  // Walls: slate-blue (NOT pitch black — vignette overlay karanlığı ekliyor)
+  const wallG=g.createLinearGradient(0,0,0,H*.66);
+  wallG.addColorStop(0,'#1c1834');wallG.addColorStop(.5,'#16122a');wallG.addColorStop(1,'#121020');
+  g.fillStyle=wallG;g.fillRect(0,0,W,H*.66);
+  // Floor: warm charcoal with slight purple tint
+  const floorG=g.createLinearGradient(0,H*.66,0,H);
+  floorG.addColorStop(0,'#160e28');floorG.addColorStop(1,'#0e0a1a');
+  g.fillStyle=floorG;g.fillRect(0,H*.66,W,H*.34);
+  // Baseboard — subtle purple glow edge
+  g.fillStyle='#2c1a50';g.fillRect(0,H*.655,W,6);
+  g.save();g.shadowColor='#9900ff';g.shadowBlur=8;g.fillStyle='rgba(100,0,180,.45)';g.fillRect(0,H*.655,W,2);g.restore();
+  for(let x=0;x<W;x+=52){g.strokeStyle='rgba(120,0,200,.1)';g.lineWidth=1;g.beginPath();g.moveTo(x,H*.66);g.lineTo(x,H);g.stroke();}
+  // Ceiling
+  g.fillStyle='#1e1a38';g.fillRect(0,0,W,H*.03);
+  g.fillStyle='#2a2248';g.fillRect(0,H*.03,W,2);
+
+  // ── 4 NIGHT WINDOWS ──
+  const wins=[{x:W*.03,w:W*.14},{x:W*.2,w:W*.11},{x:W*.34,w:W*.1},{x:W*.47,w:W*.09}];
+  wins.forEach(({x:wx,w:ww},wi)=>{
+    const nightG=g.createLinearGradient(wx,H*.04,wx,H*.44);
+    nightG.addColorStop(0,'#000510');nightG.addColorStop(.5,'#010820');nightG.addColorStop(1,'#020c2a');
+    g.fillStyle=nightG;g.fillRect(wx,H*.04,ww,H*.4);
+    // Stars
+    for(let i=0;i<16;i++){
+      const sx=wx+Math.sin(i*wi*1.7+i*0.9)*ww*.44+ww*.5,sy=H*.05+Math.abs(Math.cos(i*1.1))*H*.35;
+      const br=.35+Math.sin(i*2.3)*.3;
+      g.fillStyle=`rgba(255,255,255,${Math.max(0.1,br)})`;
+      g.beginPath();g.arc(sx,sy,Math.random()*.8+.2,0,Math.PI*2);g.fill();
+    }
+    if(wi===0){
+      // Moon
+      g.save();g.shadowColor='#aaccff';g.shadowBlur=22;
+      g.fillStyle='#ddeeff';g.beginPath();g.arc(wx+ww*.65,H*.13,ww*.12,0,Math.PI*2);g.fill();
+      g.fillStyle=nightG;g.beginPath();g.arc(wx+ww*.73,H*.12,ww*.1,0,Math.PI*2);g.fill();
+      g.restore();
+    }
+    // Purple mist from window
+    const mist=g.createLinearGradient(wx,H*.44,wx,H*.66);
+    mist.addColorStop(0,'rgba(80,0,140,.12)');mist.addColorStop(1,'transparent');
+    g.fillStyle=mist;g.fillRect(wx-ww*.05,H*.44,ww*1.1,H*.22);
+    g.strokeStyle='#300060';g.lineWidth=2;g.strokeRect(wx,H*.04,ww,H*.4);
+    g.lineWidth=1;g.strokeStyle='#280050';
+    g.beginPath();g.moveTo(wx+ww*.5,H*.04);g.lineTo(wx+ww*.5,H*.44);g.stroke();
+    g.beginPath();g.moveTo(wx,H*.22);g.lineTo(wx+ww,H*.22);g.stroke();
+  });
+
+  // ── CANDLELIGHT warmth ──
+  [W*.26,W*.63].forEach(cx2=>{
+    // Warm glow halo on wall/desk
+    const cg=g.createRadialGradient(cx2,H*.52,0,cx2,H*.52,W*.12);
+    cg.addColorStop(0,'rgba(255,160,40,.18)');cg.addColorStop(1,'transparent');
+    g.fillStyle=cg;g.fillRect(cx2-W*.12,H*.3,W*.24,H*.3);
+    g.save();g.shadowColor='#ff8800';g.shadowBlur=20;
+    // Candle body
+    g.fillStyle='#f5e8c0';g.fillRect(cx2-4,H*.525,8,H*.05);
+    // Flame
+    g.fillStyle='#ffdd44';g.beginPath();g.ellipse(cx2,H*.518,4,7,0,0,Math.PI*2);g.fill();
+    g.fillStyle='#ff8800';g.beginPath();g.ellipse(cx2,H*.522,2,4,0,0,Math.PI*2);g.fill();
+    g.fillStyle='#fff0a0';g.beginPath();g.ellipse(cx2,H*.52,1.5,3,0,0,Math.PI*2);g.fill();
+    g.restore();
+    // Candle plate
+    g.fillStyle='#c0a060';g.beginPath();g.ellipse(cx2,H*.578,12,4,0,0,Math.PI*2);g.fill();
+  });
+
+  // Purple fog/mist
+  const fog=g.createLinearGradient(0,H*.6,0,H);fog.addColorStop(0,'rgba(80,0,160,.08)');fog.addColorStop(1,'rgba(40,0,80,.04)');
+  g.fillStyle=fog;g.fillRect(0,H*.6,W,H*.4);
+
+  // Desk
   g.fillStyle='#100c06';g.fillRect(W*.21,H*.52,W*.54,H*.14);g.fillStyle='#1a1208';g.fillRect(W*.21,H*.52,W*.54,4);
-  // dual monitors
+  // Dual monitors
   [W*.27,W*.42].forEach(mx=>{
     g.fillStyle='#0c0c0c';g.fillRect(mx,H*.3,W*.12,H*.22);
     g.fillStyle='#06101a';g.fillRect(mx+W*.006,H*.31,W*.108,H*.19);
-    g.save();g.shadowColor='#ff00aa';g.shadowBlur=12;g.fillStyle='rgba(255,0,170,.12)';g.fillRect(mx+W*.006,H*.31,W*.108,H*.19);g.restore();
+    g.save();g.shadowColor='#9900ff';g.shadowBlur=12;g.fillStyle='rgba(120,0,200,.12)';g.fillRect(mx+W*.006,H*.31,W*.108,H*.19);g.restore();
     g.fillStyle='#181818';g.fillRect(mx+W*.044,H*.52,W*.022,H*.03);
   });
-  // keyboard
-  g.save();g.shadowColor='#00f5ff';g.shadowBlur=8;g.fillStyle='#102030';g.fillRect(W*.28,H*.56,W*.22,H*.06);g.restore();
-  // speaker
+  // Keyboard
+  g.save();g.shadowColor='#9900ff';g.shadowBlur=8;g.fillStyle='#0e0820';g.fillRect(W*.28,H*.56,W*.22,H*.06);g.restore();
+  // Speaker
   g.fillStyle='#181818';g.fillRect(W*.68,H*.36,W*.04,H*.16);
-  g.strokeStyle='rgba(0,245,255,.28)';g.lineWidth=1;for(let i=0;i<4;i++)g.strokeRect(W*.683,H*.38+i*H*.03,W*.034,H*.024);
-  // neon shelf
-  g.save();g.shadowColor='#8800ff';g.shadowBlur=18;g.fillStyle='rgba(136,0,255,.3)';g.fillRect(W*.77,H*.51,W*.1,3);g.restore();
-  // bigger neon sign
-  g.save();g.shadowColor='#ff00aa';g.shadowBlur=24;
-  g.strokeStyle='#ff00aa';g.lineWidth=1.5;g.strokeRect(W*.85,H*.07,W*.12,H*.22);
-  g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#ff00aa';g.textAlign='center';
+  g.strokeStyle='rgba(136,0,255,.28)';g.lineWidth=1;for(let i=0;i<4;i++)g.strokeRect(W*.683,H*.38+i*H*.03,W*.034,H*.024);
+  // Neon shelf
+  g.save();g.shadowColor='#8800ff';g.shadowBlur=22;g.fillStyle='rgba(136,0,255,.4)';g.fillRect(W*.77,H*.51,W*.1,3);g.restore();
+  // Neon sign — ominous purple
+  g.save();g.shadowColor='#aa00ff';g.shadowBlur=32;
+  g.strokeStyle='#8800cc';g.lineWidth=1.5;g.strokeRect(W*.85,H*.07,W*.12,H*.22);
+  g.fillStyle='rgba(136,0,255,.06)';g.fillRect(W*.85,H*.07,W*.12,H*.22);
+  g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#9900dd';g.textAlign='center';
   g.fillText('SYS',W*.91,H*.18);g.fillText('PRO',W*.91,H*.275);g.restore();
+  // Floating dust particles
+  for(let i=0;i<14;i++){
+    const px=W*(0.08+i*0.065+Math.sin(i*1.4)*0.04),py=H*(0.28+Math.cos(i*0.9)*0.16);
+    g.fillStyle=`rgba(160,80,255,${0.04+i*.014})`;g.beginPath();g.arc(px,py,1.5,0,Math.PI*2);g.fill();
+  }
 }
 
 function drawRoom2(g,W,H){
-  const wg=g.createLinearGradient(0,0,0,H);wg.addColorStop(0,'#030310');wg.addColorStop(1,'#020206');
-  g.fillStyle=wg;g.fillRect(0,0,W,H);
-  g.fillStyle='#070718';g.fillRect(0,H*.66,W,H*.34);
-  // glowing floor grid
+  // ── BÖLÜM 3: Yüksek teknoloji, gece, loş ama görünür ──
+  // Wall: deep navy (not pure black)
+  const wallG=g.createLinearGradient(0,0,0,H*.66);
+  wallG.addColorStop(0,'#0e0c20');wallG.addColorStop(.5,'#0a0818');wallG.addColorStop(1,'#080612');
+  g.fillStyle=wallG;g.fillRect(0,0,W,H*.66);
+  // Floor: dark navy with glow from monitors
+  g.fillStyle='#07071a';g.fillRect(0,H*.66,W,H*.34);
+  // Glowing floor grid
   for(let x=0;x<W;x+=52){
-    const tg=g.createLinearGradient(x,H*.66,x,H);tg.addColorStop(0,'rgba(0,245,255,.12)');tg.addColorStop(1,'transparent');
+    const tg=g.createLinearGradient(x,H*.66,x,H);tg.addColorStop(0,'rgba(0,245,255,.15)');tg.addColorStop(1,'transparent');
     g.fillStyle=tg;g.fillRect(x,H*.66,1.5,H*.34);
   }
+  // Ceiling
+  g.fillStyle='#101020';g.fillRect(0,0,W,H*.03);
+
+  // ── 4 WINDOWS — same count as other rooms, night sky ──
+  const wins=[{x:W*.03,w:W*.14},{x:W*.2,w:W*.11},{x:W*.34,w:W*.1},{x:W*.47,w:W*.09}];
+  wins.forEach(({x:wx,w:ww},wi)=>{
+    const nightG=g.createLinearGradient(wx,H*.04,wx,H*.44);
+    nightG.addColorStop(0,'#000510');nightG.addColorStop(.5,'#010820');nightG.addColorStop(1,'#020c2a');
+    g.fillStyle=nightG;g.fillRect(wx,H*.04,ww,H*.4);
+    // Stars in each window
+    for(let i=0;i<14;i++){
+      const sx=wx+Math.sin(i*wi+i)*ww*.45+ww*.5,sy=H*.05+Math.abs(Math.cos(i*1.3))*H*.35;
+      g.fillStyle=`rgba(255,255,255,${.3+Math.random()*.6})`;
+      g.beginPath();g.arc(sx,sy,Math.random()*.8+.2,0,Math.PI*2);g.fill();
+    }
+    // City lights (bottom of windows)
+    for(let i=0;i<8;i++){
+      const lx=wx+i*ww*.13,ly=H*.38+Math.sin(i)*H*.04;
+      g.fillStyle=`rgba(${Math.random()>0.5?'255,200,100':'100,200,255'},0.6)`;
+      g.fillRect(lx,ly,3,H*.06+Math.sin(i)*H*.02);
+    }
+    if(wi===0){
+      // Moon
+      g.save();g.shadowColor='#aaccff';g.shadowBlur=18;
+      g.fillStyle='#ddeeff';g.beginPath();g.arc(wx+ww*.65,H*.13,ww*.11,0,Math.PI*2);g.fill();
+      g.fillStyle=nightG;g.beginPath();g.arc(wx+ww*.73,H*.12,ww*.09,0,Math.PI*2);g.fill();
+      g.restore();
+    }
+    // Purple mist spill
+    const mist=g.createLinearGradient(wx,H*.44,wx,H*.66);
+    mist.addColorStop(0,'rgba(60,0,120,.1)');mist.addColorStop(1,'transparent');
+    g.fillStyle=mist;g.fillRect(wx-ww*.05,H*.44,ww*1.1,H*.22);
+    g.strokeStyle='#1a0040';g.lineWidth=2;g.strokeRect(wx,H*.04,ww,H*.4);
+    g.lineWidth=1;g.strokeStyle='#150030';
+    g.beginPath();g.moveTo(wx+ww*.5,H*.04);g.lineTo(wx+ww*.5,H*.44);g.stroke();
+    g.beginPath();g.moveTo(wx,H*.22);g.lineTo(wx+ww,H*.22);g.stroke();
+  });
+
   // mega desk
   g.fillStyle='#07070f';g.fillRect(W*.1,H*.51,W*.66,H*.15);
   g.save();g.shadowColor='#00f5ff';g.shadowBlur=16;g.fillStyle='rgba(0,245,255,.2)';g.fillRect(W*.1,H*.51,W*.66,2.5);g.restore();
@@ -653,6 +874,7 @@ function drawRoom2(g,W,H){
   // big neon sign
   g.save();g.shadowColor='#aaff00';g.shadowBlur=24;
   g.strokeStyle='#aaff00';g.lineWidth=1.5;g.strokeRect(W*.84,H*.06,W*.13,H*.22);
+  g.fillStyle='rgba(170,255,0,.04)';g.fillRect(W*.84,H*.06,W*.13,H*.22);
   g.font=`bold ${Math.round(H*.065)}px Orbitron,monospace`;g.fillStyle='#aaff00';g.textAlign='center';
   g.fillText('SYS',W*.905,H*.17);g.fillText('PRO',W*.905,H*.26);g.restore();
 }
@@ -660,60 +882,145 @@ function drawRoom2(g,W,H){
 // ── PIXEL CHARACTERS ──
 function drawChar(g, x, y, size, role, facingLeft, frame, isWalking) {
   g.save();
+  // Mimar is taller — scale up
+  const isMimar = role==='mimar';
+  const scaledSize = isMimar ? size * 1.28 : size;
   if(facingLeft){g.translate(x,0);g.scale(-1,1);g.translate(-x,0);}
-  const s=size, bob=Math.sin(frame*.18)*1.5;
+  const s=scaledSize, bob=Math.sin(frame*.18)*1.5;
   const legA=isWalking?Math.sin(frame*.38)*11:Math.sin(frame*.07)*2;
   const armA=isWalking?Math.sin(frame*.38)*14:Math.sin(frame*.07)*3;
 
   // shadow
   g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(x,y+s*.93,s*.34,s*.07,0,0,Math.PI*2);g.fill();
-  // legs
-  const lc={mimar:'#0a0a16',player:'#081626',baker:'#4a2200',librarian:'#162240',gym:'#082414'}[role]||'#101020';
-  g.fillStyle=lc;
-  [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.1,y+s*.44+bob);g.rotate(-side*legA*Math.PI/180);g.fillRect(-s*.08,0,s*.16,s*.39);g.restore();});
-  // shoes
-  [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.1,y+s*.83+bob);g.rotate(-side*legA*Math.PI/180);g.fillStyle='#080606';g.fillRect(-s*.1,-s*.04,s*.22,s*.1);g.restore();});
-  // body
-  const bc={mimar:'#0c0c1c',player:'#081626',baker:'#eeeeff',librarian:'#1a3a90',gym:'#186230'}[role]||'#101020';
-  g.fillStyle=bc;g.fillRect(x-s*.22,y-s*.06+bob,s*.44,s*.5);
-  g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x-s*.18,y-s*.03+bob,s*.36,s*.18);
-  // arms
-  g.fillStyle=bc;
-  [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.28,y+s*.04+bob);g.rotate(-side*armA*Math.PI/180);g.fillRect(-s*.08,0,s*.16,s*.3);g.restore();});
-  // head
-  const sk={mimar:'#c09070',player:'#deb890',baker:'#f5c090',librarian:'#e0c070',gym:'#d0a870'}[role]||'#e0b888';
-  g.fillStyle=sk;g.fillRect(x-s*.18,y-s*.38+bob,s*.36,s*.32);
-  // eyes
-  g.fillStyle='#1a1a1a';g.fillRect(x-s*.1,y-s*.28+bob,s*.06,s*.066);g.fillRect(x+s*.04,y-s*.28+bob,s*.06,s*.066);
-  g.fillStyle='#fff';g.fillRect(x-s*.09,y-s*.27+bob,s*.024,s*.024);g.fillRect(x+s*.05,y-s*.27+bob,s*.024,s*.024);
-  g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.2;g.beginPath();g.arc(x,y-s*.16+bob,s*.055,.2,Math.PI-.2);g.stroke();
 
-  if(role==='baker'){
-    g.fillStyle='#fff';g.fillRect(x-s*.18,y-s*.55+bob,s*.36,s*.05);
-    g.fillStyle='#fff';g.beginPath();g.arc(x,y-s*.61+bob,s*.16,Math.PI,0);g.fill();g.beginPath();g.arc(x,y-s*.61+bob,s*.16,0,Math.PI);g.fill();
-    g.fillStyle='rgba(220,220,220,.3)';g.fillRect(x-s*.06,y-s*.73+bob,s*.04,s*.19);
+  if(role==='mimar'){
+    // ── MIMAR: Long dark robe, tall figure ──
+    // Robe (floor-length, wide)
+    const robeGrad=g.createLinearGradient(x-s*.32,0,x+s*.32,0);
+    robeGrad.addColorStop(0,'#070714');robeGrad.addColorStop(.5,'#0e0e22');robeGrad.addColorStop(1,'#070714');
+    g.fillStyle=robeGrad;
+    g.beginPath();g.moveTo(x-s*.26,y-s*.05+bob);g.lineTo(x+s*.26,y-s*.05+bob);g.lineTo(x+s*.34,y+s*.93+bob);g.lineTo(x-s*.34,y+s*.93+bob);g.closePath();g.fill();
+    // Robe inner sheen
+    g.fillStyle='rgba(136,0,255,.08)';
+    g.beginPath();g.moveTo(x-s*.04,y-s*.02+bob);g.lineTo(x+s*.04,y-s*.02+bob);g.lineTo(x+s*.06,y+s*.9+bob);g.lineTo(x-s*.06,y+s*.9+bob);g.closePath();g.fill();
+    // Robe hem details
+    g.strokeStyle='rgba(136,0,255,.3)';g.lineWidth=1.5;
+    g.beginPath();g.moveTo(x-s*.34,y+s*.9+bob);g.lineTo(x+s*.34,y+s*.9+bob);g.stroke();
+    // Body/torso under robe
+    g.fillStyle='#0c0c20';g.fillRect(x-s*.22,y-s*.1+bob,s*.44,s*.5);
+    // Collar / chest detail
+    g.fillStyle='rgba(136,0,255,.22)';g.fillRect(x-s*.1,y-s*.06+bob,s*.2,s*.22);
+    g.strokeStyle='rgba(136,0,255,.4)';g.lineWidth=1;g.strokeRect(x-s*.1,y-s*.06+bob,s*.2,s*.22);
+    // Robe arms (wide sleeves)
+    [-1,1].forEach(side=>{
+      g.save();g.translate(x+side*s*.3,y+s*.04+bob);g.rotate(-side*armA*Math.PI/180);
+      g.fillStyle='#09091a';g.fillRect(-s*.11,0,s*.22,s*.28);
+      g.fillStyle='rgba(136,0,255,.1)';g.fillRect(-s*.11,0,s*.22,s*.28);
+      g.restore();
+    });
+    // Head
+    g.fillStyle='#b08060';g.fillRect(x-s*.16,y-s*.38+bob,s*.32,s*.28);
+    // Shadow/hood around face
+    g.fillStyle='rgba(0,0,0,.6)';g.fillRect(x-s*.18,y-s*.38+bob,s*.36,s*.12);
+    // Eyes — glowing purple
+    g.fillStyle='#9900ff';g.fillRect(x-s*.1,y-s*.28+bob,s*.07,s*.07);g.fillRect(x+s*.03,y-s*.28+bob,s*.07,s*.07);
+    g.save();g.shadowColor='#aa00ff';g.shadowBlur=8;g.fillStyle='#dd44ff';g.fillRect(x-s*.09,y-s*.27+bob,s*.03,s*.03);g.fillRect(x+s*.04,y-s*.27+bob,s*.03,s*.03);g.restore();
+    // Mouth — thin, stern
+    g.strokeStyle='rgba(0,0,0,.5)';g.lineWidth=1;g.beginPath();g.moveTo(x-s*.06,y-s*.14+bob);g.lineTo(x+s*.06,y-s*.14+bob);g.stroke();
+    // Hood (tall dark cowl)
+    g.fillStyle='#050510';
+    g.beginPath();g.moveTo(x-s*.22,y-s*.38+bob);g.quadraticCurveTo(x-s*.24,y-s*.9+bob,x,y-s*.96+bob);g.quadraticCurveTo(x+s*.24,y-s*.9+bob,x+s*.22,y-s*.38+bob);g.fill();
+    g.fillStyle='rgba(136,0,255,.1)';g.beginPath();g.moveTo(x-s*.04,y-s*.38+bob);g.quadraticCurveTo(x-s*.04,y-s*.85+bob,x,y-s*.92+bob);g.quadraticCurveTo(x+s*.04,y-s*.85+bob,x+s*.04,y-s*.38+bob);g.fill();
+    // Purple aura glow
+    g.save();g.globalAlpha=.18;g.fillStyle='#8800ff';g.beginPath();g.arc(x,y+bob,s*.62,0,Math.PI*2);g.fill();g.restore();
+
   } else if(role==='librarian'){
-    g.fillStyle='#162060';g.fillRect(x-s*.2,y-s*.59+bob,s*.4,s*.05);
-    g.fillStyle='#162060';g.beginPath();g.arc(x,y-s*.65+bob,s*.13,0,Math.PI*2);g.fill();
-    g.strokeStyle='#4a4a4a';g.lineWidth=1.5;
-    g.strokeRect(x-s*.13,y-s*.285+bob,s*.09,s*.07);g.strokeRect(x+s*.04,y-s*.285+bob,s*.09,s*.07);
-    g.beginPath();g.moveTo(x-s*.04,y-s*.25+bob);g.lineTo(x+s*.04,y-s*.25+bob);g.stroke();
-  } else if(role==='gym'){
-    g.fillStyle='#0e3c18';g.fillRect(x-s*.2,y-s*.53+bob,s*.4,s*.05);
-    g.fillStyle='#0e3c18';g.fillRect(x-s*.15,y-s*.8+bob,s*.3,s*.28);
-    g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x-s*.08,y-s*.76+bob,s*.06,s*.2);
-  } else if(role==='mimar'){
-    g.fillStyle='#070707';g.fillRect(x-s*.22,y-s*.57+bob,s*.44,s*.06);
-    g.fillStyle='#0d0d0d';g.fillRect(x-s*.15,y-s*.87+bob,s*.3,s*.31);
-    g.fillStyle='rgba(255,255,255,.04)';g.fillRect(x-s*.1,y-s*.83+bob,s*.05,s*.23);
-    g.save();g.globalAlpha=.14;g.fillStyle='#8800ff';g.beginPath();g.arc(x,y+bob,s*.58,0,Math.PI*2);g.fill();g.restore();
-    g.fillStyle='rgba(0,0,0,.5)';g.fillRect(x-s*.18,y-s*.38+bob,s*.36,s*.14);
-  } else { // player
-    g.fillStyle='#051c2c';g.fillRect(x-s*.21,y-s*.49+bob,s*.42,s*.06);
-    g.fillStyle='#051c2c';g.fillRect(x-s*.16,y-s*.77+bob,s*.32,s*.29);
-    g.fillStyle='#083a54';g.fillRect(x+s*.07,y-s*.5+bob,s*.14,s*.05);
-    g.strokeStyle='#00f5ff';g.lineWidth=1.5;g.beginPath();g.arc(x,y-s*.53+bob,s*.22,Math.PI,0);g.stroke();
-    g.fillStyle='#00f5ff';g.fillRect(x-s*.225,y-s*.535+bob,s*.05,s*.08);g.fillRect(x+s*.175,y-s*.535+bob,s*.05,s*.08);
+    // ── LİBRARİAN: Feminine figure, long hair, skirt, glasses ──
+    // Legs (slimmer, skirt covers upper)
+    g.fillStyle='#243060';
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.08,y+s*.56+bob);g.rotate(-side*legA*Math.PI/180);g.fillRect(-s*.065,0,s*.13,s*.37);g.restore();});
+    // Shoes (small heels)
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.08,y+s*.93+bob);g.rotate(-side*legA*Math.PI/180);g.fillStyle='#1a0808';g.fillRect(-s*.08,-s*.02,s*.18,s*.08);g.fillStyle='#2a0a0a';g.fillRect(x+side*s*.08-s*.01,y+s*.93+bob-s*.06,s*.04,s*.06);g.restore();});
+    // Skirt (A-line, wider at bottom)
+    const skirtG=g.createLinearGradient(x,y+s*.36+bob,x,y+s*.6+bob);
+    skirtG.addColorStop(0,'#1a3a90');skirtG.addColorStop(1,'#243080');
+    g.fillStyle=skirtG;
+    g.beginPath();g.moveTo(x-s*.2,y+s*.36+bob);g.lineTo(x+s*.2,y+s*.36+bob);g.lineTo(x+s*.28,y+s*.6+bob);g.lineTo(x-s*.28,y+s*.6+bob);g.closePath();g.fill();
+    // Body / blouse
+    g.fillStyle='#e8e8f8';g.fillRect(x-s*.19,y-s*.06+bob,s*.38,s*.44);
+    g.fillStyle='rgba(100,100,255,.1)';g.fillRect(x-s*.15,y-s*.03+bob,s*.3,s*.2);
+    // Collar detail
+    g.fillStyle='#c0c0e0';g.fillRect(x-s*.08,y-s*.06+bob,s*.16,s*.08);
+    // Arms (slimmer, feminine)
+    g.fillStyle='#e8e8f8';
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.24,y+s*.04+bob);g.rotate(-side*armA*Math.PI/180);g.fillRect(-s*.065,0,s*.13,s*.26);g.restore();});
+    // Hands
+    g.fillStyle='#f0c880';
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.24,y+s*.04+bob);g.rotate(-side*armA*Math.PI/180);g.fillRect(-s*.055,s*.25,s*.11,s*.1);g.restore();});
+    // Head (slightly rounder/smaller for feminine)
+    g.fillStyle='#f0c880';g.beginPath();g.roundRect(x-s*.15,y-s*.38+bob,s*.3,s*.3,s*.06);g.fill();
+    // Eyes (larger, with lashes)
+    g.fillStyle='#2a2a2a';g.fillRect(x-s*.09,y-s*.28+bob,s*.065,s*.07);g.fillRect(x+s*.025,y-s*.28+bob,s*.065,s*.07);
+    g.fillStyle='#4a8aff';g.fillRect(x-s*.08,y-s*.275+bob,s*.045,s*.045);g.fillRect(x+s*.035,y-s*.275+bob,s*.045,s*.045);
+    g.fillStyle='#fff';g.fillRect(x-s*.075,y-s*.268+bob,s*.018,s*.018);g.fillRect(x+s*.04,y-s*.268+bob,s*.018,s*.018);
+    // Eyelashes (top)
+    g.strokeStyle='#1a1a1a';g.lineWidth=1.2;
+    [-s*.09,-s*.07,-s*.05,s*.025,s*.045,s*.065].forEach((ex,i)=>{g.beginPath();g.moveTo(x+ex,y-s*.28+bob);g.lineTo(x+ex-s*.005,y-s*.305+bob);g.stroke();});
+    // Mouth (lips, smaller)
+    g.fillStyle='#e05070';g.fillRect(x-s*.05,y-s*.16+bob,s*.1,s*.04);
+    g.fillStyle='#c03050';g.fillRect(x-s*.04,y-s*.155+bob,s*.08,s*.025);
+    // Glasses
+    g.strokeStyle='#5a5a5a';g.lineWidth=1.8;
+    g.strokeRect(x-s*.14,y-s*.295+bob,s*.1,s*.078);g.strokeRect(x+s*.04,y-s*.295+bob,s*.1,s*.078);
+    g.beginPath();g.moveTo(x-s*.04,y-s*.258+bob);g.lineTo(x+s*.04,y-s*.258+bob);g.stroke();
+    g.beginPath();g.moveTo(x+s*.14,y-s*.275+bob);g.lineTo(x+s*.17,y-s*.27+bob);g.stroke();
+    g.beginPath();g.moveTo(x-s*.14,y-s*.275+bob);g.lineTo(x-s*.17,y-s*.27+bob);g.stroke();
+    // ── LONG HAIR (key feminine feature) ──
+    // Hair base / top
+    g.fillStyle='#3a2000';g.beginPath();g.ellipse(x,y-s*.32+bob,s*.18,s*.14,0,0,Math.PI*2);g.fill();
+    // Hair sides flowing down to shoulders/waist
+    g.fillStyle='#3a2000';
+    // Left side hair
+    g.beginPath();g.moveTo(x-s*.12,y-s*.38+bob);g.quadraticCurveTo(x-s*.3,y-s*.2+bob,x-s*.28,y+s*.22+bob);g.quadraticCurveTo(x-s*.26,y+s*.28+bob,x-s*.22,y+s*.22+bob);g.quadraticCurveTo(x-s*.26,y-s*.1+bob,x-s*.18,y-s*.35+bob);g.closePath();g.fill();
+    // Right side hair
+    g.beginPath();g.moveTo(x+s*.12,y-s*.38+bob);g.quadraticCurveTo(x+s*.3,y-s*.2+bob,x+s*.28,y+s*.22+bob);g.quadraticCurveTo(x+s*.26,y+s*.28+bob,x+s*.22,y+s*.22+bob);g.quadraticCurveTo(x+s*.26,y-s*.1+bob,x+s*.18,y-s*.35+bob);g.closePath();g.fill();
+    // Hair highlight
+    g.fillStyle='#5a3010';g.beginPath();g.ellipse(x-s*.03,y-s*.38+bob,s*.06,s*.04,-.3,0,Math.PI*2);g.fill();
+    // Small hat/bun on top
+    g.fillStyle='#2a1400';g.beginPath();g.arc(x,y-s*.44+bob,s*.1,0,Math.PI*2);g.fill();
+    g.fillStyle='#4a2a00';g.fillRect(x-s*.14,y-s*.48+bob,s*.28,s*.04);
+
+  } else {
+    // ── DEFAULT CHARS (baker, gym, player) ──
+    const lc={player:'#081626',baker:'#4a2200',gym:'#082414'}[role]||'#101020';
+    g.fillStyle=lc;
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.1,y+s*.44+bob);g.rotate(-side*legA*Math.PI/180);g.fillRect(-s*.08,0,s*.16,s*.39);g.restore();});
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.1,y+s*.83+bob);g.rotate(-side*legA*Math.PI/180);g.fillStyle='#080606';g.fillRect(-s*.1,-s*.04,s*.22,s*.1);g.restore();});
+    const bc={player:'#081626',baker:'#eeeeff',gym:'#186230'}[role]||'#101020';
+    g.fillStyle=bc;g.fillRect(x-s*.22,y-s*.06+bob,s*.44,s*.5);
+    g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x-s*.18,y-s*.03+bob,s*.36,s*.18);
+    g.fillStyle=bc;
+    [-1,1].forEach(side=>{g.save();g.translate(x+side*s*.28,y+s*.04+bob);g.rotate(-side*armA*Math.PI/180);g.fillRect(-s*.08,0,s*.16,s*.3);g.restore();});
+    const sk={player:'#deb890',baker:'#f5c090',gym:'#d0a870'}[role]||'#e0b888';
+    g.fillStyle=sk;g.fillRect(x-s*.18,y-s*.38+bob,s*.36,s*.32);
+    g.fillStyle='#1a1a1a';g.fillRect(x-s*.1,y-s*.28+bob,s*.06,s*.066);g.fillRect(x+s*.04,y-s*.28+bob,s*.06,s*.066);
+    g.fillStyle='#fff';g.fillRect(x-s*.09,y-s*.27+bob,s*.024,s*.024);g.fillRect(x+s*.05,y-s*.27+bob,s*.024,s*.024);
+    g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.2;g.beginPath();g.arc(x,y-s*.16+bob,s*.055,.2,Math.PI-.2);g.stroke();
+    if(role==='baker'){
+      g.fillStyle='#fff';g.fillRect(x-s*.18,y-s*.55+bob,s*.36,s*.05);
+      g.fillStyle='#fff';g.beginPath();g.arc(x,y-s*.61+bob,s*.16,Math.PI,0);g.fill();g.beginPath();g.arc(x,y-s*.61+bob,s*.16,0,Math.PI);g.fill();
+      g.fillStyle='rgba(220,220,220,.3)';g.fillRect(x-s*.06,y-s*.73+bob,s*.04,s*.19);
+    } else if(role==='gym'){
+      g.fillStyle='#0e3c18';g.fillRect(x-s*.2,y-s*.53+bob,s*.4,s*.05);
+      g.fillStyle='#0e3c18';g.fillRect(x-s*.15,y-s*.8+bob,s*.3,s*.28);
+      g.fillStyle='rgba(255,255,255,.06)';g.fillRect(x-s*.08,y-s*.76+bob,s*.06,s*.2);
+    } else { // player
+      g.fillStyle='#051c2c';g.fillRect(x-s*.21,y-s*.49+bob,s*.42,s*.06);
+      g.fillStyle='#051c2c';g.fillRect(x-s*.16,y-s*.77+bob,s*.32,s*.29);
+      g.fillStyle='#083a54';g.fillRect(x+s*.07,y-s*.5+bob,s*.14,s*.05);
+      g.strokeStyle='#00f5ff';g.lineWidth=1.5;g.beginPath();g.arc(x,y-s*.53+bob,s*.22,Math.PI,0);g.stroke();
+      g.fillStyle='#00f5ff';g.fillRect(x-s*.225,y-s*.535+bob,s*.05,s*.08);g.fillRect(x+s*.175,y-s*.535+bob,s*.05,s*.08);
+    }
   }
   g.restore();
 }
@@ -745,6 +1052,12 @@ function animLoop() {
   animSt.frame++;
   const st=animSt, walk=st.phase==='walk_in'||st.phase==='walk_out';
   drawBg(st.bg);
+
+  // ── DYNAMIC LIGHTING OVERLAY for dark scenes (bg 1 & 2) ──
+  if(st.bg===1 || st.bg===2){
+    drawLightingOverlay(cx, CW, CH, st.bg, st.frame, st.npcX, st.npcY, st.playerX, st.playerY);
+  }
+
   drawChar(cx, st.playerX, st.playerY, Math.round(CH*.22), 'player', true, st.frame, false);
 
   if(st.phase==='walk_in'){
@@ -778,6 +1091,90 @@ function animLoop() {
   animSt.rafId=requestAnimationFrame(animLoop);
 }
 
+// ── LIGHTING OVERLAY — Broken Age / Disco Elysium style ──
+// Technique: radial "point lights" punched through a dark vignette overlay
+// Sources: candles on desk, monitor glow, NPC position (for mimar's purple aura)
+function drawLightingOverlay(g, W, H, bgIdx, frame, npcX, npcY, playerX, playerY){
+  // 1. Dark semi-transparent vignette over entire canvas
+  // Not pitch-black — a "slate night" ambient (about 55-65% opacity at edges)
+  const vigG=g.createRadialGradient(W*.45,H*.5,H*.12,W*.45,H*.5,H*.75);
+  if(bgIdx===1){
+    // Mimar night — deep blue-purple vignette, warm center
+    vigG.addColorStop(0,'rgba(4,2,12,.0)');     // center — open/visible
+    vigG.addColorStop(.35,'rgba(4,2,12,.18)');
+    vigG.addColorStop(.65,'rgba(4,2,12,.42)');
+    vigG.addColorStop(1,'rgba(4,2,12,.72)');
+  } else {
+    // High-tech night — deep navy vignette
+    vigG.addColorStop(0,'rgba(2,2,14,.0)');
+    vigG.addColorStop(.35,'rgba(2,2,14,.15)');
+    vigG.addColorStop(.65,'rgba(2,2,14,.38)');
+    vigG.addColorStop(1,'rgba(2,2,14,.68)');
+  }
+  g.fillStyle=vigG; g.fillRect(0,0,W,H);
+
+  // 2. Candle light spots on desk (warm orange radial, flickering)
+  const flicker = 0.85 + Math.sin(frame*.11)*0.08 + Math.sin(frame*.27)*0.07;
+  if(bgIdx===1){
+    [W*.265, W*.635].forEach(cx2=>{
+      const cg=g.createRadialGradient(cx2,H*.53,0,cx2,H*.53,W*.22*flicker);
+      cg.addColorStop(0,`rgba(255,160,60,${.28*flicker})`);
+      cg.addColorStop(.4,`rgba(255,100,20,${.12*flicker})`);
+      cg.addColorStop(1,'rgba(255,80,0,0)');
+      g.fillStyle=cg; g.fillRect(0,0,W,H);
+    });
+  }
+
+  // 3. Monitor glow — cool blue/colored light on characters
+  if(bgIdx===1){
+    // dual monitors — purple/blue glow
+    [W*.33,W*.48].forEach(mx=>{
+      const mg=g.createRadialGradient(mx,H*.4,0,mx,H*.4,W*.18);
+      mg.addColorStop(0,`rgba(100,20,200,.22)`);
+      mg.addColorStop(.5,`rgba(60,0,140,.08)`);
+      mg.addColorStop(1,'rgba(60,0,140,0)');
+      g.fillStyle=mg; g.fillRect(0,0,W,H);
+    });
+  } else {
+    // triple monitors — multi-color neon glow
+    [[W*.195,'#00f5ff'],[W*.335,'#ff00aa'],[W*.475,'#aaff00']].forEach(([mx,c])=>{
+      const r=parseInt(c.slice(1,3),16),gr=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
+      const mg=g.createRadialGradient(mx,H*.38,0,mx,H*.38,W*.15);
+      mg.addColorStop(0,`rgba(${r},${gr},${b},.18)`);
+      mg.addColorStop(.5,`rgba(${r},${gr},${b},.06)`);
+      mg.addColorStop(1,`rgba(${r},${gr},${b},0)`);
+      g.fillStyle=mg; g.fillRect(0,0,W,H);
+    });
+  }
+
+  // 4. NPC presence light — mimar has a purple aura that illuminates nearby area
+  if(bgIdx===1 && npcX > 0){
+    const ng=g.createRadialGradient(npcX,npcY-H*.1,0,npcX,npcY-H*.1,H*.28);
+    ng.addColorStop(0,`rgba(120,0,200,.15)`);
+    ng.addColorStop(.4,`rgba(80,0,140,.07)`);
+    ng.addColorStop(1,'rgba(80,0,140,0)');
+    g.fillStyle=ng; g.fillRect(0,0,W,H);
+  }
+
+  // 5. Player desk lamp — small warm light where player stands
+  const pg=g.createRadialGradient(playerX,playerY-H*.1,0,playerX,playerY-H*.1,H*.22);
+  pg.addColorStop(0,`rgba(200,220,255,.12)`);
+  pg.addColorStop(.5,`rgba(180,200,255,.04)`);
+  pg.addColorStop(1,'rgba(180,200,255,0)');
+  g.fillStyle=pg; g.fillRect(0,0,W,H);
+
+  // 6. Neon sign glow pools on wall/floor
+  if(bgIdx===1){
+    const ng2=g.createRadialGradient(W*.91,H*.18,0,W*.91,H*.18,W*.14);
+    ng2.addColorStop(0,'rgba(136,0,204,.22)');ng2.addColorStop(1,'rgba(136,0,204,0)');
+    g.fillStyle=ng2; g.fillRect(0,0,W,H);
+  } else {
+    const ng2=g.createRadialGradient(W*.91,H*.17,0,W*.91,H*.17,W*.14);
+    ng2.addColorStop(0,'rgba(170,255,0,.14)');ng2.addColorStop(1,'rgba(170,255,0,0)');
+    g.fillStyle=ng2; g.fillRect(0,0,W,H);
+  }
+}
+
 function beginLine(){
   const ln=animSt.lines[animSt.lineIdx];
   animSt.full=ln.text; animSt.typed=''; animSt.typeTimer=0; animSt.idleTimer=0;
@@ -786,6 +1183,29 @@ function beginLine(){
   document.getElementById('speech-spk').style.color=ln.color||'#00f5ff';
   document.getElementById('speech-txt').textContent='';
   if(ln.dark) b.classList.add('dark'); else b.classList.remove('dark');
+
+  // Position bubble next to NPC head
+  const wrap=document.getElementById('speech-wrap');
+  const isMimar=animSt.npc==='mimar';
+  const charSize=Math.round(CH*.22)*(isMimar?1.28:1);
+  // Head is at npcX, npcY - charSize*0.24 (approx top of head in canvas coords)
+  const headTopCanvas = animSt.npcY - charSize*0.46;
+  // Convert canvas y to viewport y
+  const canvasRect=CV.getBoundingClientRect();
+  const scaleY=canvasRect.height/CH;
+  const scaleX=canvasRect.width/CW;
+  const headVX=(animSt.npcX)*scaleX + canvasRect.left;
+  const headVY=headTopCanvas*scaleY + canvasRect.top;
+
+  // Place bubble to the right of the NPC, at head height
+  const bubbleLeft = headVX + charSize*scaleX*0.4;
+  const bubbleTop = Math.max(60, headVY - 10);
+
+  wrap.style.left = bubbleLeft + 'px';
+  wrap.style.top = bubbleTop + 'px';
+  wrap.style.bottom = 'auto';
+  wrap.style.transform = 'none';
+
   document.getElementById('speech-wrap').classList.add('show');
 }
 function hideSpeech(){document.getElementById('speech-wrap').classList.remove('show');}
@@ -825,20 +1245,32 @@ function startShopWalk(cb){
 // ══════════════════════════════════════════
 const SHOP_ITEMS = [
   // BÖLÜM 1 items
-  { id:'headphones', name:'Gamer Kulaklık', icon:'🎧', price:400, desc:'Süper ses kalitesi. Konsantrasyon +20.', tier:1, tierLabel:'B1' },
-  { id:'mousepad',   name:'RGB Mousepad',   icon:'🖱️', price:600, desc:'Büyük format, neon kenarlıklı.', tier:1, tierLabel:'B1' },
-  { id:'keyboard',   name:'Mekanik Klavye', icon:'⌨️', price:900, desc:'Blue switch, RGB aydınlatmalı.', tier:1, tierLabel:'B1' },
-  { id:'webcam',     name:'4K Webcam',      icon:'📷', price:700, desc:'Sunum için kristal netliğinde görüntü.', tier:1, tierLabel:'B1' },
+  { id:'headphones', name:'Gamer Kulaklık', icon:'🎧', price:400, desc:'Çoktan seçmeli sorular için destek.', tier:1, tierLabel:'B1',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Çoktan seçmeli (MC) sorularda ekranda "konsantrasyon ipucu" belirir — doğru cevabın hangi kategoride olduğuna dair analitik bilgi verir.', tag:'MC İpucu', tagType:'neon' }},
+  { id:'mousepad',   name:'RGB Mousepad',   icon:'🖱️', price:600, desc:'Sürükle-bırak sorular için destek.', tier:1, tierLabel:'B1',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Sürükle-bırak (DD) sorularında "ergonomi ipucu" belirir — Actor ve Use Case sınıflandırmasında yol gösterir.', tag:'DD İpucu', tagType:'neon' }},
+  { id:'keyboard',   name:'Mekanik Klavye', icon:'⌨️', price:900, desc:'User Story soruları için destek.', tier:1, tierLabel:'B1',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'User Story Builder sorularında "klavye ipucu" belirir — boşlukları hangi sırayla doldurmak gerektiğini gösterir.', tag:'SB İpucu', tagType:'neon' }},
+  { id:'webcam',     name:'4K Webcam',      icon:'📷', price:700, desc:'Müşteri jest analizi — Bölüm 1 için.', tier:1, tierLabel:'B1',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Ahmet Usta ve Selin Hanım sorularında yapay zeka jest analizi ipucu belirir — müşterinin ne kastettiğini söyler.', tag:'Müşteri İpucu', tagType:'neon' }},
   // BÖLÜM 2 items
-  { id:'monitor2',   name:'Çift Monitör',   icon:'🖥️', price:2200, desc:'Yan yana iki ekran. Analiz alanı iki katına çıkar.', tier:2, tierLabel:'B2' },
-  { id:'chair',      name:'Ergonomik Sandalye', icon:'🪑', price:1800, desc:'Sırt desteğiyle 12 saatlik çalışma seansı.', tier:2, tierLabel:'B2' },
-  { id:'speaker',    name:'5+1 Ses Sistemi', icon:'🔊', price:2500, desc:'Ofisi konser salonuna çevirir.', tier:2, tierLabel:'B2' },
-  { id:'light',      name:'LED Pano Işığı',  icon:'💡', price:1500, desc:'Masanın kenarına özel neon ışık.', tier:2, tierLabel:'B2' },
+  { id:'monitor2',   name:'Çift Monitör',   icon:'🖥️', price:2200, desc:'Her soru türü için referans ekran.', tier:2, tierLabel:'B2',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Tüm soru türlerinde ikinci ekranda referans doküman açılır. <<include>> ve <<extend>> farkını, Actor/Use Case tanımlarını anında gösterir.', tag:'Genel İpucu', tagType:'pink' }},
+  { id:'chair',      name:'Ergonomik Sandalye', icon:'🪑', price:1800, desc:'Hata cezasını azaltır.', tier:2, tierLabel:'B2',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Her yanlış cevapta uygulanacak para cezası %20\'den %15\'e düşer. Tüm bölümde aktif — yanlış yapsan bile daha az para kaybedersin.', tag:'Ceza -%5', tagType:'gold' }},
+  { id:'speaker',    name:'5+1 Ses Sistemi', icon:'🔊', price:2500, desc:'Mimar sorularında ses analizi.', tier:2, tierLabel:'B2',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Mimar\'ın konuşmalarındaki "bazen" ve "her zaman" gibi anahtar kelimeleri ses analizi ile yakalar ve soru sorulduğunda vurgular.', tag:'Mimar İpucu', tagType:'pink' }},
+  { id:'light',      name:'LED Pano Işığı',  icon:'💡', price:1500, desc:'User Story soruları için görsel destek.', tier:2, tierLabel:'B2',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'User Story Builder sorularında aydınlatma ipucu belirir — [Aktör]→[Eylem]→[Fayda] sırasını net gösterir.', tag:'SB İpucu', tagType:'gold' }},
   // BÖLÜM 3 items
-  { id:'monitor3',   name:'Üçlü Monitör Seti', icon:'📺', price:6000, desc:'Üç ekran. Gölge Analist\'e yakışır kurulum.', tier:3, tierLabel:'B3' },
-  { id:'server',     name:'Kişisel Sunucu',  icon:'🖧',  price:8000, desc:'Ev sunucusu. Kendi sistemini host et.', tier:3, tierLabel:'B3' },
-  { id:'desk',       name:'Akıllı Yükseklilik Ayarlı Masa', icon:'🗃️', price:5000, desc:'RGB şeritli motorlu masa.', tier:3, tierLabel:'B3' },
-  { id:'vr',         name:'VR Headset',      icon:'🥽', price:7000, desc:'Sistemleri sanal ortamda modelle.', tier:3, tierLabel:'B3' },
+  { id:'monitor3',   name:'Üçlü Monitör Seti', icon:'📺', price:6000, desc:'3 ekran — tüm soru türleri için güçlü destek.', tier:3, tierLabel:'B3',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Sol: teori, Orta: soru, Sağ: çözüm taslağı. Tüm soru türlerinde güçlü ipucu — yanlış seçenekleri elemen kolaylaşır.', tag:'Güçlü İpucu', tagType:'gold' }},
+  { id:'server',     name:'Kişisel Sunucu',  icon:'🖧',  price:8000, desc:'DD sorularında tam veritabanı taraması.', tier:3, tierLabel:'B3',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Sürükle-bırak sorularında sunucu Actor/Use Case veritabanını tarar: "Aktörler sistemin DIŞINDA, Use Case\'ler İÇİNDE" kuralını daima hatırlatır.', tag:'DD Güç İpucu', tagType:'neon' }},
+  { id:'desk',       name:'Akıllı Yükseklilik Ayarlı Masa', icon:'🗃️', price:5000, desc:'Hata cezasını azaltır.', tier:3, tierLabel:'B3',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Ergonomik Sandalye ile aynı bonus — hata cezası %20\'den %15\'e düşer. Sandalye yoksa bu masa da aynı etkiyi sağlar, ikisi birden yığılmaz.', tag:'Ceza -%5', tagType:'gold' }},
+  { id:'vr',         name:'VR Headset',      icon:'🥽', price:7000, desc:'Tüm sorularda genel güçlü ipucu.', tier:3, tierLabel:'B3',
+    advantage: { title:'OYUN İÇİ AVANTAJ', body:'Use Case diyagramını 3D\'de modeller. Tüm soru türlerinde güçlü genel ipucu aktif — Actor oval dışarıda, Use Case dikdörtgen içeride kuralını 3D olarak gösterir.', tag:'3D İpucu', tagType:'gold' }},
 ];
 
 // Which tiers are available per chapter (1-indexed)
@@ -867,16 +1299,16 @@ const MISSIONS = [
     ca:['a1','a2'],cu:['u1','u2','u3','u4'],
   },
   { ch:0, bg:0, npc:'librarian',
-    lines:[{speaker:'SELİN HANIM',color:'#4a90d9',text:'Genç analist, kütüphanemize hoş geldin.'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'Üyelerimiz kitap ödünç alıyor ama her şey kağıtta.'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'User Story formatında analiz yapar mısın?'}],
+    lines:[{speaker:'SELİN HANIM',color:'#4a90d9',text:'Merhaba... sen sistem işleri yapıyormuşsun, değil mi?'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'Kütüphanemizde üyeler kitap ödünç alıyor ama hep kağıt kalemle yapıyoruz, çok zor oluyor.'},{speaker:'SELİN HANIM',color:'#4a90d9',text:'Bilmiyorum, belki bilgisayara geçebiliriz? Nasıl yazar bunu sen?'}],
     concept:{title:'📝 USER STORY FORMATI',body:'"Bir [Aktör] olarak,\n[Eylem] istiyorum,\nböylece [Fayda] elde edeyim."'},
-    q:"Selin Hanım'ın kütüphane üyeleri için doğru User Story hangisi?",
-    hint:'Üç parça: Kim, Ne yapmak, Neden.',
+    q:"Selin Hanım üyelerinin kitabı online alabilmesini istiyor. Bu isteği doğru User Story formatında hangisi ifade eder?",
+    hint:'Üç parça: Kim (üye), Ne yapmak (online ödünç al), Neden (kütüphaneye gitmeden).',
     type:'mc',
     choices:[
       {id:'c1',text:'"Sistem kitapları takip etmeli ve bildirim göndermeli."',ok:false},
       {id:'c2',text:'"Bir Kütüphane Üyesi olarak, online kitap ödünç almak istiyorum, böylece kütüphaneye gitmeden kitaba ulaşabileyim."',ok:true},
-      {id:'c3',text:'"Kitap ödünç alma sistemi yapılacak."',ok:false},
-      {id:'c4',text:'"Kütüphaneci olarak kitap veritabanına bakabileyim."',ok:false},
+      {id:'c3',text:'"Kütüphanede kitap ödünç alma işlemi bilgisayara aktarılacak."',ok:false},
+      {id:'c4',text:'"Kütüphaneci olarak kitap veritabanını görmek istiyorum."',ok:false},
     ],
   },
   { ch:0, bg:0, npc:'gym',
@@ -1037,20 +1469,126 @@ function loadMission(idx){
   });
 }
 
+// ── EQUIPMENT HINT SYSTEM ──
+// Each item provides a gameplay hint for specific mission types
+const EQUIPMENT_HINTS = {
+  headphones: {
+    label: '🎧 Gamer Kulaklık',
+    color: '#00f5ff',
+    hint: (m) => {
+      if(m.type==='mc') return 'Kulaklığın gürültü engelleme özelliği konsantrasyonunu artırdı — yanlış şıkların tonu farklı hissettiriyor. Dikkatini dağıtan seçenekleri bir ele.';
+      return null;
+    }
+  },
+  mousepad: {
+    label: '🖱️ RGB Mousepad',
+    color: '#aaff00',
+    hint: (m) => {
+      if(m.type==='dd') return 'Geniş mousepad sayesinde sürükle-bırak işlemleri çok daha kolay! Actor\'ları sol, Use Case\'leri sağa yerleştir.';
+      return null;
+    }
+  },
+  keyboard: {
+    label: '⌨️ Mekanik Klavye',
+    color: '#ff00aa',
+    hint: (m) => {
+      if(m.type==='sb') return 'Klavyenin Blue Switch tuşları her kelimeyi net hissettiriyor — User Story\'de üç blank\'ı sırayla doldurmak için: önce Aktör, sonra Eylem, en son Fayda.';
+      return null;
+    }
+  },
+  webcam: {
+    label: '📷 4K Webcam',
+    color: '#ffd700',
+    hint: (m) => {
+      if(m.npc==='baker') return 'Webcam\'in yapay zeka yüz analizi Ahmet Usta\'nın jestlerini okudu: stok sorununu anlatırken "Fırıncı" ve "Depo Görevlisi"ni kastediyordu.';
+      if(m.npc==='librarian') return 'Webcam\'in göz takibi teknolojisi Selin Hanım\'ın hangi User Story formatına baktığını analiz etti — "Bir [kim] olarak..." ile başlayanı seçmen lazım.';
+      return null;
+    }
+  },
+  monitor2: {
+    label: '🖥️ Çift Monitör',
+    color: '#00f5ff',
+    hint: (m) => {
+      const base = 'İkinci monitörde referans doküman açık! ';
+      if(m.type==='mc') return base + '<<include>> = ZOR BAĞLI (her zaman), <<extend>> = KOŞULLU (bazen). Şıklara bak: hangisi bu tanıma uyuyor?';
+      if(m.type==='dd') return base + 'Sol ekranda Actor tanımları, sağda Use Case örnekleri görünüyor. Aktör = KİŞİ/ROL, Use Case = EYLEM.';
+      return base + 'Referansların artık parmaklarının ucunda!';
+    }
+  },
+  chair: {
+    label: '🪑 Ergonomik Sandalye',
+    color: '#aaff00',
+    hint: (m) => 'Ergonomik sandalye uzun analiz seanslarında yorulmanı engelliyor — bu soruyu çözmek için daha net düşünüyorsun. Yanlış cevap için -20% yerine -15% ceza uygula!'
+  },
+  speaker: {
+    label: '🔊 5+1 Ses Sistemi',
+    color: '#ff00aa',
+    hint: (m) => {
+      if(m.npc==='mimar') return 'Ses sistemi Mimar\'ın sesindeki titremeleri yakaladı — "bazen" ve "her zaman" kelimelerine özellikle dikkat et. Bu iki kelime cevabı belli eder.';
+      return null;
+    }
+  },
+  light: {
+    label: '💡 LED Pano Işığı',
+    color: '#ffd700',
+    hint: (m) => {
+      if(m.type==='sb') return 'LED ışığın altında User Story şablonu kristal netliğinde görünüyor: [Aktör] → [Eylem] → [Fayda]. Bu sıradan ayrılma!';
+      return null;
+    }
+  },
+  monitor3: {
+    label: '📺 Üçlü Monitör',
+    color: '#aaff00',
+    hint: (m) => 'Üç monitör tam güç! Sol: teori, Orta: soru, Sağ: çözüm taslağı. Bu seviyede tüm seçenekleri yan yana görüyorsun — yanlış cevabı elemen çok daha kolay.'
+  },
+  server: {
+    label: '🖧 Kişisel Sunucu',
+    color: '#00f5ff',
+    hint: (m) => {
+      if(m.type==='dd') return 'Sunucun tüm Actor/Use Case veritabanını taradı! Aktörler her zaman sistemin DIŞINDA, Use Case\'ler sistemin İÇİNDE olur — bu kural asla değişmez.';
+      return null;
+    }
+  },
+  desk: {
+    label: '🗃️ Akıllı Masa',
+    color: '#ff00aa',
+    hint: (m) => 'Motorlu masa en verimli çalışma pozisyonuna geçti. Bu görevde konsantrasyon maksimumda — hata başına ceza %20 yerine %15\'e düşüyor!'
+  },
+  vr: {
+    label: '🥽 VR Headset',
+    color: '#ffd700',
+    hint: (m) => 'VR Headset Use Case diyagramını 3 boyutlu modelledi! Aktörler oval outside, Use Case\'ler dikdörtgen inside — sanal ortamda gördüğün bu yapıyı cevabına yansıt.'
+  }
+};
+
+function getEquipmentHints(m) {
+  const hints = [];
+  GS.inventory.forEach(id => {
+    const eq = EQUIPMENT_HINTS[id];
+    if (!eq) return;
+    const h = typeof eq.hint === 'function' ? eq.hint(m) : eq.hint;
+    if (h) hints.push({ label: eq.label, color: eq.color, text: h });
+  });
+  return hints;
+}
+
 // ── QUESTION PANEL ──
 function hidePanel(){
   document.getElementById('question-panel').classList.remove('show');
 }
+
+// HELP COST: buying a concept hint costs this amount
+const HELP_COST = 150;
+
 function showQuestion(m){
-  // populate concept
+  // Concept card — HIDDEN by default, only revealed via help
   const cc=document.getElementById('concept-card');
+  cc.style.display='none';
   if(m.concept){
-    cc.style.display='block';
     document.getElementById('cc-title').textContent=m.concept.title;
     document.getElementById('cc-body').textContent=m.concept.body;
-  } else { cc.style.display='none'; }
+  }
 
-  const mIdx=MISSIONS.indexOf(m);
   const chMissions=missionsForChapter(m.ch);
   const mPos=chMissions.indexOf(m)+1;
   document.getElementById('q-label').textContent=`📋 GÖREV ${mPos} / ${chMissions.length}`;
@@ -1059,9 +1597,43 @@ function showQuestion(m){
   const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/chMissions.length);
   updatePotDisplay(base, 0);
 
+  // Penalty reduction for desk/chair
+  if(GS.inventory.includes('desk') || GS.inventory.includes('chair')){
+    window._penaltyOverride = 0.15;
+  } else {
+    window._penaltyOverride = null;
+  }
+
   const hb=document.getElementById('hint-box');
-  if(m.hint){hb.style.display='block';hb.innerHTML=`<strong>💡 İpucu:</strong> ${m.hint}`;}
-  else{hb.style.display='none';}
+  hb.style.display='none';
+
+  // Clear help offer
+  const hof=document.getElementById('help-offer');
+  if(hof) hof.style.display='none';
+
+  // ── EQUIPMENT HINTS ──
+  const eqHints = getEquipmentHints(m);
+  const eqArea = document.getElementById('eq-hint-area') || (() => {
+    const d = document.createElement('div');
+    d.id = 'eq-hint-area';
+    document.getElementById('question-panel').querySelector('.qp-inner').insertBefore(
+      d, document.getElementById('question-panel').querySelector('.qp-row-top')
+    );
+    return d;
+  })();
+  if(eqHints.length > 0){
+    eqArea.style.display='block';
+    eqArea.innerHTML = eqHints.map(h=>`
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:9px 14px;margin-bottom:7px;
+        border-radius:7px;border:1px solid ${h.color}28;background:${h.color}06;">
+        <span style="font-family:'Orbitron';font-size:.64rem;color:${h.color};white-space:nowrap;padding-top:3px">${h.label}</span>
+        <span style="font-family:'Rajdhani';font-size:.9rem;color:#b8ccd8;line-height:1.55">${h.text}</span>
+      </div>
+    `).join('');
+  } else {
+    eqArea.style.display='none';
+    eqArea.innerHTML='';
+  }
 
   document.getElementById('q-text').textContent=m.q;
   document.getElementById('fb-box').className='fb-box';
@@ -1071,7 +1643,6 @@ function showQuestion(m){
   else if(m.type==='dd') renderDD(m);
   else if(m.type==='sb') renderSB(m);
 
-  // Animate panel sliding in
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>{
       document.getElementById('question-panel').classList.add('show');
@@ -1079,14 +1650,50 @@ function showQuestion(m){
   });
 }
 
+function offerHelp(m){
+  // Show the help offer box
+  let hof=document.getElementById('help-offer');
+  if(!hof){
+    hof=document.createElement('div');hof.id='help-offer';hof.className='help-offer-box';
+    const qInner=document.querySelector('.qp-inner');
+    const fbBox=document.getElementById('fb-box');
+    qInner.insertBefore(hof,fbBox.nextSibling);
+  }
+  const canAfford=GS.money>=HELP_COST;
+  hof.style.display='flex';
+  hof.innerHTML=`
+    <div class="ho-text">💡 Konu anlatımını görmek ister misin?</div>
+    <div class="ho-cost">${canAfford?`₺${HELP_COST.toLocaleString()} karşılığında`:'Yetersiz bakiye'}</div>
+    ${canAfford?`<button class="btn btn-gold btn-sm" onclick="buyHelp()">YARDIM AL</button>`:`<button class="btn btn-sm" style="border-color:var(--dim);color:var(--dim);cursor:not-allowed" disabled>YARDIM AL</button>`}
+  `;
+}
+
+function buyHelp(){
+  const m=MISSIONS[GS.missionIdx];
+  if(GS.money<HELP_COST||!m.concept) return;
+  GS.money-=HELP_COST;
+  updateHUD();
+  // Show concept card
+  const cc=document.getElementById('concept-card');
+  cc.style.display='block';
+  // Hide offer
+  const hof=document.getElementById('help-offer');
+  if(hof) hof.style.display='none';
+  // Also show the standard hint
+  const hb=document.getElementById('hint-box');
+  if(m.hint){hb.style.display='block';hb.innerHTML=`<strong>💡 İpucu:</strong> ${m.hint}`;}
+}
+
 function updatePotDisplay(base, wrongs){
-  const reduced=Math.round(base*Math.pow(1-WRONG_PENALTY_PCT, wrongs));
+  const pct = window._penaltyOverride || WRONG_PENALTY_PCT;
+  const reduced=Math.round(base*Math.pow(1-pct, wrongs));
   GS.missionEarned=reduced;
   document.getElementById('q-pot').textContent=`₺${reduced.toLocaleString()}`;
   const pr=document.getElementById('penalty-row');
   if(wrongs>0){
     const lost=base-reduced;
-    pr.textContent=`⚠ ${wrongs} hata — ₺${lost.toLocaleString()} düştü`;
+    const penLabel = window._penaltyOverride ? ' (Masa/Sandalye avantajı!)' : '';
+    pr.textContent=`⚠ ${wrongs} hata — ₺${lost.toLocaleString()} düştü${penLabel}`;
   } else { pr.textContent=''; }
 }
 
@@ -1130,47 +1737,97 @@ function checkMC(sid){
         document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${id}')">✓ ONAYLA</button>`;
       };
     });
+    if(m.concept) offerHelp(m);
   }
 }
 
-// ── DRAG DROP ──
+// ── DRAG DROP — True drag & drop, neutral colors ──
 function renderDD(m){
   const ia=document.getElementById('interact-area');
   const aSlot=[],uSlot=[];
+
   function rebuild(){
     ia.innerHTML=`
-      <div style="font-size:.76rem;color:var(--dim);margin-bottom:8px">Kartlara tıklayarak sınıflandır:</div>
+      <div style="font-size:.92rem;font-family:'Rajdhani';font-weight:600;color:var(--dim);margin-bottom:10px">
+        Kartları sürükleyerek doğru kategoriye bırak:
+      </div>
       <div class="dd-pool" id="dd-pool"></div>
       <div class="dd-cols">
-        <div class="dd-col" id="dd-a"><div class="dd-col-title" style="color:var(--neon2)">🎭 ACTORS</div><div id="dd-a-placed"></div></div>
-        <div class="dd-col" id="dd-u"><div class="dd-col-title" style="color:var(--neon)">📋 USE CASES</div><div id="dd-u-placed"></div></div>
+        <div class="dd-col" id="dd-a"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="dropDD(event,'a')">
+          <div class="dd-col-title">🎭 ACTORS</div>
+          <div id="dd-a-placed"></div>
+        </div>
+        <div class="dd-col" id="dd-u"
+          ondragover="event.preventDefault();this.classList.add('drag-over')"
+          ondragleave="this.classList.remove('drag-over')"
+          ondrop="dropDD(event,'u')">
+          <div class="dd-col-title">📋 USE CASES</div>
+          <div id="dd-u-placed"></div>
+        </div>
       </div>`;
+
     const pool=document.getElementById('dd-pool');
-    m.items.forEach(item=>{
-      if(aSlot.includes(item.id)||uSlot.includes(item.id))return;
-      const c=document.createElement('div');c.className=`dd-chip ${item.t}`;c.textContent=item.l;
-      c.onclick=()=>{if(item.t==='actor')aSlot.push(item.id);else uSlot.push(item.id);rebuild();ddSubmitBtn(m,aSlot,uSlot);};
+    // Shuffle the pool display order for extra challenge
+    const remaining=m.items.filter(item=>!aSlot.includes(item.id)&&!uSlot.includes(item.id));
+    remaining.forEach(item=>{
+      const c=document.createElement('div');
+      c.className='dd-chip';   // neutral — no actor/usecase color class
+      c.textContent=item.l;
+      c.draggable=true;
+      c.dataset.id=item.id;
+      c.addEventListener('dragstart',e=>{
+        e.dataTransfer.setData('text/plain',item.id);
+        c.classList.add('dragging');
+      });
+      c.addEventListener('dragend',()=>c.classList.remove('dragging'));
+      // Also support click-to-cycle (click → actor → usecase → back)
+      c.addEventListener('click',()=>{
+        if(aSlot.includes(item.id)){aSlot.splice(aSlot.indexOf(item.id),1);uSlot.push(item.id);}
+        else if(uSlot.includes(item.id)){uSlot.splice(uSlot.indexOf(item.id),1);}
+        else{aSlot.push(item.id);}
+        rebuild(); ddSubmitBtn(m,aSlot,uSlot);
+      });
       pool.appendChild(c);
     });
-    [[aSlot,'dd-a-placed','actor'],[uSlot,'dd-u-placed','usecase']].forEach(([sl,cid,type])=>{
+
+    // Placed items — neutral color, just with remove X
+    [[aSlot,'dd-a-placed'],[uSlot,'dd-u-placed']].forEach(([sl,cid])=>{
       const cont=document.getElementById(cid);
       sl.forEach(id=>{
         const item=m.items.find(x=>x.id===id);
-        const chip=document.createElement('span');chip.className=`placed ${type}`;
-        chip.innerHTML=`${item.l} <span class="x" onclick="rmDD('${id}','${type==='actor'?'a':'u'}')">✕</span>`;
+        const chip=document.createElement('span');chip.className='placed';
+        chip.innerHTML=`${item.l} <span class="x" onclick="rmDD('${id}','${sl===aSlot?'a':'u'}')">✕</span>`;
         cont.appendChild(chip);
       });
     });
     ddSubmitBtn(m,aSlot,uSlot);
   }
+
+  window.dropDD=(e,col)=>{
+    e.preventDefault();
+    document.querySelectorAll('.dd-col').forEach(c=>c.classList.remove('drag-over'));
+    const id=e.dataTransfer.getData('text/plain');
+    if(!id) return;
+    // Remove from wherever it was
+    const ai=aSlot.indexOf(id);if(ai>-1)aSlot.splice(ai,1);
+    const ui=uSlot.indexOf(id);if(ui>-1)uSlot.splice(ui,1);
+    if(col==='a') aSlot.push(id); else uSlot.push(id);
+    rebuild();
+  };
   window.rmDD=(id,col)=>{
     const arr=col==='a'?aSlot:uSlot;const i=arr.indexOf(id);if(i>-1)arr.splice(i,1);rebuild();
   };
   window._ddA=aSlot;window._ddU=uSlot;window._ddM=m;
   rebuild();
 }
+
 function ddSubmitBtn(m,aSlot,uSlot){
   const ar=document.getElementById('action-row');ar.innerHTML='';
+  const hasAny=aSlot.length>0||uSlot.length>0;
+  if(!hasAny) return;
   const b=document.createElement('button');b.className='btn btn-neon';b.textContent='✓ ANALİZİ ONAYLA';
   b.onclick=()=>{
     const aOk=m.ca.every(a=>aSlot.includes(a))&&aSlot.every(a=>m.ca.includes(a));
@@ -1182,7 +1839,8 @@ function ddSubmitBtn(m,aSlot,uSlot){
       const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
       updatePotDisplay(base,GS.wrongCount);
       fb.className='fb-box no';
-      fb.textContent=`❌ Doğru değil! ${!aOk?"Actor'ler yanlış. ":""}${!uOk?"Use Case'ler yanlış. ":""}Tekrar dene.`;
+      fb.textContent=`❌ Doğru değil! ${!aOk?"Actor listesi eksik/yanlış. ":""}${!uOk?"Use Case listesi eksik/yanlış. ":""}Tekrar dene.`;
+      if(m.concept) offerHelp(m);
     }
   };
   ar.appendChild(b);
@@ -1231,6 +1889,7 @@ function checkSB(){
     updatePotDisplay(base,GS.wrongCount);
     fb.className='fb-box no';fb.textContent='❌ User Story doğru değil! Kim, ne, neden — her parçayı kontrol et.';
     document.getElementById('action-row').innerHTML=`<button class="btn btn-pink" onclick="renderSB(window._sbM)">🔄 Tekrar Dene</button>`;
+    if(m.concept) offerHelp(m);
   }
 }
 
@@ -1281,32 +1940,43 @@ function nextStep(){
 }
 
 // ── SHOP ──
+function buildShopCard(item){
+  const owned=GS.inventory.includes(item.id);
+  const canAfford=GS.money>=item.price;
+  const adv=item.advantage||{};
+  const tagClass={'neon':'adv-tag-neon','pink':'adv-tag-pink','gold':'adv-tag-gold'}[adv.tagType||'neon'];
+  const div=document.createElement('div');
+  div.className=`shop-item${owned?' bought':!canAfford?' cant':''}`;
+  div.innerHTML=`
+    <div class="si-tier tier-b${item.tier}">${item.tierLabel}</div>
+    <div class="si-icon">${item.icon}</div>
+    <div class="si-name">${item.name}</div>
+    <div class="si-desc">${item.desc}</div>
+    <div class="si-price">${owned?'✓ ALINDI':`₺${item.price.toLocaleString()}`}</div>
+    ${owned
+      ?`<div class="shop-bought-badge">✓ Envanterimde</div>`
+      :canAfford
+        ?`<button class="shop-buy-btn" onclick="buyItem('${item.id}')">SATIN AL</button>`
+        :`<button class="shop-buy-btn" disabled style="opacity:.4;cursor:not-allowed">Yetersiz Bakiye</button>`
+    }
+    ${adv.title?`
+    <div class="si-advantage">
+      <div class="si-adv-title">${adv.title}</div>
+      <div class="si-adv-body">${adv.body||''}</div>
+      ${adv.tag?`<span class="si-adv-tag ${tagClass}">${adv.tag}</span>`:''}
+    </div>`:''}
+  `;
+  return div;
+}
+
 function openShop(chapterIdx, cb){
   window._shopCb=cb;
   const tier=SHOP_TIER_PER_CHAPTER[chapterIdx]||1;
-
   document.getElementById('shop-chapter-title').textContent=`BÖLÜM ${chapterIdx+1} SONU — ALIŞVERİŞ`;
   document.getElementById('shop-wallet-val').textContent=`₺${GS.money.toLocaleString()}`;
-
-  // Build shop grid — show current tier + all lower tiers
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
-  SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>{
-    const owned=GS.inventory.includes(item.id);
-    const canAfford=GS.money>=item.price;
-    const div=document.createElement('div');
-    div.className=`shop-item${owned?' bought':!canAfford?' cant':''}`;
-    div.innerHTML=`
-      <div class="si-tier tier-b${item.tier}">${item.tierLabel}</div>
-      <div class="si-icon">${item.icon}</div>
-      <div class="si-name">${item.name}</div>
-      <div class="si-desc">${item.desc}</div>
-      <div class="si-price">${owned?'✓ ALINDI':`₺${item.price.toLocaleString()}`}</div>
-      ${owned?`<div class="shop-bought-badge">Envanterimde</div>`:canAfford?`<button class="shop-buy-btn" onclick="buyItem('${item.id}')">SATIN AL</button>`:`<button class="shop-buy-btn" disabled style="opacity:.4;cursor:not-allowed">Yetersiz Bakiye</button>`}
-    `;
-    grid.appendChild(div);
-  });
-
+  SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>grid.appendChild(buildShopCard(item)));
   renderInventoryBar();
   showLayer('scr-shop');
   startShopWalk(()=>{});
@@ -1318,7 +1988,6 @@ function buyItem(id){
   GS.money-=item.price;
   GS.inventory.push(id);
   updateHUD();
-  // re-render shop
   openShopRefresh();
 }
 
@@ -1328,21 +1997,7 @@ function openShopRefresh(){
   document.getElementById('shop-wallet-val').textContent=`₺${GS.money.toLocaleString()}`;
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
-  SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>{
-    const owned=GS.inventory.includes(item.id);
-    const canAfford=GS.money>=item.price;
-    const div=document.createElement('div');
-    div.className=`shop-item${owned?' bought':!canAfford?' cant':''}`;
-    div.innerHTML=`
-      <div class="si-tier tier-b${item.tier}">${item.tierLabel}</div>
-      <div class="si-icon">${item.icon}</div>
-      <div class="si-name">${item.name}</div>
-      <div class="si-desc">${item.desc}</div>
-      <div class="si-price">${owned?'✓ ALINDI':`₺${item.price.toLocaleString()}`}</div>
-      ${owned?`<div class="shop-bought-badge">Envanterimde</div>`:canAfford?`<button class="shop-buy-btn" onclick="buyItem('${item.id}')">SATIN AL</button>`:`<button class="shop-buy-btn" disabled style="opacity:.4;cursor:not-allowed">Yetersiz Bakiye</button>`}
-    `;
-    grid.appendChild(div);
-  });
+  SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>grid.appendChild(buildShopCard(item)));
   renderInventoryBar();
 }
 
@@ -1376,8 +2031,182 @@ function updateHUD(){
   document.getElementById('h-title').textContent=t;
 }
 
-// ── END GAME ──
-function endGame(){
+// ── VICTORY ANIMATION ──
+let victoryRaf=null, victoryFrame=0;
+
+function drawVictoryScene(canvas){
+  const g=canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  g.clearRect(0,0,W,H);
+  const f=victoryFrame;
+
+  // ── BACKGROUND: Dark office at night ──
+  const bgG=g.createLinearGradient(0,0,0,H);
+  bgG.addColorStop(0,'#06050f');bgG.addColorStop(1,'#030208');
+  g.fillStyle=bgG;g.fillRect(0,0,W,H);
+  g.fillStyle='#0a0818';g.fillRect(0,H*.65,W,H*.35);
+
+  // Floor grid
+  for(let x=0;x<W;x+=60){
+    const tg=g.createLinearGradient(x,H*.65,x,H);tg.addColorStop(0,'rgba(0,245,255,.1)');tg.addColorStop(1,'transparent');
+    g.fillStyle=tg;g.fillRect(x,H*.65,1.5,H*.35);
+  }
+
+  // Wall windows (night)
+  [{x:W*.04,w:W*.12},{x:W*.18,w:W*.1},{x:W*.31,w:W*.1},{x:W*.44,w:W*.09}].forEach(({x:wx,w:ww},wi)=>{
+    const nG=g.createLinearGradient(wx,H*.05,wx,H*.43);
+    nG.addColorStop(0,'#000814');nG.addColorStop(1,'#010c22');
+    g.fillStyle=nG;g.fillRect(wx,H*.05,ww,H*.38);
+    for(let i=0;i<12;i++){
+      const sx=wx+(Math.sin(i*(wi+1)*1.3)*.45+.5)*ww,sy=H*.06+(Math.abs(Math.cos(i*1.2)))*.32*H;
+      const twinkle=.3+Math.sin(f*.08+i)*0.25;
+      g.fillStyle=`rgba(255,255,255,${Math.max(0.05,twinkle)})`;
+      g.beginPath();g.arc(sx,sy,.6+Math.sin(f*.12+i)*.4,0,Math.PI*2);g.fill();
+    }
+    g.strokeStyle='#1a1040';g.lineWidth=2;g.strokeRect(wx,H*.05,ww,H*.38);
+    g.lineWidth=1;g.strokeStyle='#140c30';
+    g.beginPath();g.moveTo(wx+ww*.5,H*.05);g.lineTo(wx+ww*.5,H*.43);g.stroke();
+    g.beginPath();g.moveTo(wx,H*.22);g.lineTo(wx+ww,H*.22);g.stroke();
+  });
+
+  // Big desk
+  g.fillStyle='#0e0c1c';g.fillRect(W*.08,H*.5,W*.7,H*.15);
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=14;g.fillStyle='rgba(0,245,255,.18)';g.fillRect(W*.08,H*.5,W*.7,2.5);g.restore();
+
+  // Triple monitors (the ones earned)
+  const monColors=['#00f5ff','#ff00aa','#aaff00'];
+  [[W*.12,'#00f5ff'],[W*.27,'#ff00aa'],[W*.42,'#aaff00']].forEach(([mx,c],mi)=>{
+    g.fillStyle='#0a0a14';g.fillRect(mx,H*.22,W*.12,H*.28);
+    g.save();g.shadowColor=c;g.shadowBlur=20+Math.sin(f*.05+mi)*6;
+    const pulseAlpha=.15+Math.sin(f*.06+mi*2)*.05;
+    g.fillStyle=c+Math.round(pulseAlpha*255).toString(16).padStart(2,'0');
+    g.fillRect(mx+W*.007,H*.23,W*.106,H*.25);
+    // Draw "SHADOW ANALYST" text on monitors
+    g.font=`bold ${Math.round(H*.025)}px Orbitron,monospace`;g.fillStyle=c;g.textAlign='center';
+    g.fillText(['USE CASE','ACTOR','SYSTEM'][mi],mx+W*.06,H*.35+Math.sin(f*.04)*2);
+    g.restore();
+    g.fillStyle='#181828';g.fillRect(mx+W*.04,H*.5,W*.03,H*.028);
+  });
+
+  // ── SEATED SHADOW ANALYST CHARACTER ──
+  // Chair behind desk
+  g.fillStyle='#181828';g.fillRect(W*.56,H*.42,W*.08,H*.2);
+  g.fillStyle='#1e1e38';g.fillRect(W*.54,H*.56,W*.12,H*.08);
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=4;g.strokeStyle='rgba(0,245,255,.2)';g.lineWidth=1;g.strokeRect(W*.54,H*.56,W*.12,H*.08);g.restore();
+
+  // Body / desk position (character seated, leaning slightly)
+  const lean=Math.sin(f*.03)*2; // subtle breathing lean
+  const cx2=W*.6, cy=H*.52;
+  const s=H*.18; // character scale
+
+  // Arms on desk
+  g.fillStyle='#081626';
+  g.fillRect(cx2-s*.4,cy+s*.05,s*.25,s*.08); // left arm
+  g.fillRect(cx2+s*.15,cy+s*.05,s*.25,s*.08); // right arm
+
+  // Torso (sleek dark jacket)
+  const bodyG=g.createLinearGradient(cx2-s*.22,cy-s*.1,cx2+s*.22,cy+s*.4);
+  bodyG.addColorStop(0,'#0c1828');bodyG.addColorStop(1,'#060e1c');
+  g.fillStyle=bodyG;g.fillRect(cx2-s*.22,cy-s*.08+lean,s*.44,s*.48);
+  // Jacket lapel
+  g.fillStyle='rgba(0,245,255,.12)';
+  g.beginPath();g.moveTo(cx2,cy-s*.08+lean);g.lineTo(cx2-s*.1,cy+s*.1+lean);g.lineTo(cx2,cy+s*.05+lean);g.closePath();g.fill();
+  g.beginPath();g.moveTo(cx2,cy-s*.08+lean);g.lineTo(cx2+s*.1,cy+s*.1+lean);g.lineTo(cx2,cy+s*.05+lean);g.closePath();g.fill();
+  // Neon strip on jacket (rank indicator)
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=8;g.fillStyle='rgba(0,245,255,.7)';
+  g.fillRect(cx2-s*.22,cy+s*.06+lean,s*.44,2);g.restore();
+
+  // Head
+  g.fillStyle='#d8a878';
+  g.beginPath();g.roundRect(cx2-s*.16,cy-s*.4+lean,s*.32,s*.3,s*.05);g.fill();
+
+  // Hair (dark, styled back — confident look)
+  g.fillStyle='#1c1008';
+  g.beginPath();g.ellipse(cx2,cy-s*.44+lean,s*.18,s*.12,0,0,Math.PI*2);g.fill();
+  g.beginPath();g.moveTo(cx2-s*.16,cy-s*.38+lean);g.quadraticCurveTo(cx2-s*.2,cy-s*.5+lean,cx2-s*.06,cy-s*.52+lean);
+  g.quadraticCurveTo(cx2+s*.08,cy-s*.54+lean,cx2+s*.16,cy-s*.38+lean);g.fill();
+  // Hair shine
+  g.fillStyle='rgba(80,50,20,.4)';g.beginPath();g.ellipse(cx2+s*.04,cy-s*.48+lean,s*.05,s*.025,-.3,0,Math.PI*2);g.fill();
+
+  // Eyes — confident, focused
+  g.fillStyle='#1a1a1a';
+  g.fillRect(cx2-s*.1,cy-s*.3+lean,s*.065,s*.065);
+  g.fillRect(cx2+s*.035,cy-s*.3+lean,s*.065,s*.065);
+  // Iris — glowing neon tint
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=4;
+  g.fillStyle='#00c8ff';g.fillRect(cx2-s*.09,cy-s*.295+lean,s*.04,s*.04);
+  g.fillStyle='#00c8ff';g.fillRect(cx2+s*.045,cy-s*.295+lean,s*.04,s*.04);g.restore();
+  // Eye highlight
+  g.fillStyle='#fff';g.fillRect(cx2-s*.082,cy-s*.287+lean,s*.015,s*.015);g.fillRect(cx2+s*.053,cy-s*.287+lean,s*.015,s*.015);
+
+  // Confident slight smirk
+  g.strokeStyle='rgba(0,0,0,.6)';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(cx2-s*.04,cy-s*.16+lean);g.quadraticCurveTo(cx2+s*.01,cy-s*.13+lean,cx2+s*.07,cy-s*.15+lean);g.stroke();
+
+  // Glasses (optional — analyst look)
+  g.strokeStyle='#4a6080';g.lineWidth=1.5;
+  g.strokeRect(cx2-s*.13,cy-s*.315+lean,s*.095,s*.075);
+  g.strokeRect(cx2+s*.035,cy-s*.315+lean,s*.095,s*.075);
+  g.beginPath();g.moveTo(cx2-s*.035,cy-s*.278+lean);g.lineTo(cx2+s*.035,cy-s*.278+lean);g.stroke();
+
+  // Hands on keyboard
+  g.fillStyle='#c89060';
+  g.beginPath();g.roundRect(cx2-s*.35,cy+s*.08,s*.14,s*.07,s*.02);g.fill();
+  g.beginPath();g.roundRect(cx2+s*.21,cy+s*.08,s*.14,s*.07,s*.02);g.fill();
+
+  // Keyboard on desk
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=6;g.fillStyle='#0c1828';g.fillRect(cx2-s*.4,cy+s*.13,s*.8,s*.06);g.restore();
+  g.strokeStyle='rgba(0,245,255,.15)';g.lineWidth=1;
+  for(let kx=cx2-s*.38;kx<cx2+s*.38;kx+=s*.08){g.strokeRect(kx,cy+s*.135,s*.07,s*.04);}
+
+  // Neon ambient glow around the analyst
+  const aura=g.createRadialGradient(cx2,cy,0,cx2,cy,H*.25);
+  aura.addColorStop(0,`rgba(0,180,255,.06)`);
+  aura.addColorStop(.5,`rgba(0,100,200,.03)`);
+  aura.addColorStop(1,'transparent');
+  g.fillStyle=aura;g.fillRect(0,0,W,H);
+
+  // ── NEON "SHADOW ANALYST" title sign on wall ──
+  g.save();
+  const titleFlicker=0.8+Math.sin(f*.07)*.15+Math.sin(f*.13)*.05;
+  g.globalAlpha=titleFlicker;
+  g.shadowColor='#00f5ff';g.shadowBlur=28;
+  g.strokeStyle='#00f5ff';g.lineWidth=1.5;g.strokeRect(W*.77,H*.06,W*.2,H*.26);
+  g.fillStyle='rgba(0,245,255,.04)';g.fillRect(W*.77,H*.06,W*.2,H*.26);
+  g.font=`900 ${Math.round(H*.05)}px Orbitron,monospace`;g.fillStyle='#00f5ff';g.textAlign='center';
+  g.fillText('SHADOW',W*.87,H*.16);g.fillText('ANALYST',W*.87,H*.23);
+  g.font=`${Math.round(H*.028)}px Orbitron,monospace`;g.fillStyle='rgba(255,215,0,.9)';
+  g.fillText('⭐ CERTIFIED',W*.87,H*.295);
+  g.restore();
+
+  // RGB floor strip
+  const rgbG=g.createLinearGradient(0,0,W,0);
+  rgbG.addColorStop(0,'#ff0080');rgbG.addColorStop(.33,'#00f5ff');rgbG.addColorStop(.66,'#aaff00');rgbG.addColorStop(1,'#ff0080');
+  g.save();g.shadowColor='#00f5ff';g.shadowBlur=12;g.fillStyle=rgbG;g.fillRect(0,H*.645,W,3);g.restore();
+
+  // Vignette
+  const vig=g.createRadialGradient(cx2,H*.5,H*.1,cx2,H*.5,H*.7);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(.5,'rgba(0,0,0,.1)');vig.addColorStop(1,'rgba(0,0,0,.65)');
+  g.fillStyle=vig;g.fillRect(0,0,W,H);
+
+  victoryFrame++;
+}
+
+function startVictoryAnimation(){
+  const canvas=document.getElementById('victory-canvas');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  showLayer('scr-victory');
+  victoryFrame=0;
+  function loop(){
+    drawVictoryScene(canvas);
+    victoryRaf=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function showFinalStats(){
+  if(victoryRaf){cancelAnimationFrame(victoryRaf);victoryRaf=null;}
+  hideLayer('scr-victory');
   showLayer('scr-final');
   document.getElementById('h-chap').textContent='✓ BİTTİ';
   document.getElementById('final-stats').innerHTML=`
@@ -1388,15 +2217,45 @@ function endGame(){
   `;
   const fi=document.getElementById('final-inventory');
   if(GS.inventory.length>0){
-    fi.innerHTML=`<div style="font-family:Orbitron;font-size:.72rem;color:var(--neon);letter-spacing:2px;margin-bottom:10px">🛒 ALDIĞIN EKİPMANLAR</div><div class="inventory-bar" style="justify-content:center">${GS.inventory.map(id=>{const it=SHOP_ITEMS.find(i=>i.id===id);return it?`<div class="inv-item">${it.icon} ${it.name}</div>`:''}).join('')}</div>`;
+    const storyLines = {
+      headphones: 'Gamer Kulaklık — MC sorularında konsantrasyonunu tavan yaptırdı.',
+      mousepad:   'RGB Mousepad — Drag&Drop sorularını süzercesine çözdü.',
+      keyboard:   'Mekanik Klavye — User Story blankları için klavye ipucu sağladı.',
+      webcam:     '4K Webcam — Müşteri jest analizi ile Bölüm 0\'da ipucu verdi.',
+      monitor2:   'Çift Monitör — Referans ekranı her soru tipinde yardıma koştu.',
+      chair:      'Ergonomik Sandalye — Hata cezasını %15\'e indirerek para korudu.',
+      speaker:    '5+1 Ses Sistemi — Mimar\'ın anahtar kelimelerini ses analiziyle yakaladı.',
+      light:      'LED Pano Işığı — Story Builder sorularını kristal net gösterdi.',
+      monitor3:   'Üçlü Monitör Seti — 3 ekran gücüyle son bölümde rakipsizdin.',
+      server:     'Kişisel Sunucu — DD sorularında Actor/UseCase veritabanı taraması yaptı.',
+      desk:       'Akıllı Masa — Hata cezasını %15\'e düşürüp bakiyeni korudu.',
+      vr:         'VR Headset — Use Case diyagramını 3D\'de modelleyerek son bölümü domine etti.',
+    };
+    fi.innerHTML=`
+      <div style="font-family:Orbitron;font-size:.72rem;color:var(--neon);letter-spacing:2px;margin-bottom:10px">🛒 EKİPMANLARIN OYUNA KATKISI</div>
+      <div style="max-width:680px;margin:0 auto">
+        ${GS.inventory.map(id=>{
+          const it=SHOP_ITEMS.find(i=>i.id===id);
+          const story=storyLines[id]||`${it?.icon||''} ${it?.name||id}`;
+          return it?`<div style="display:flex;align-items:center;gap:10px;padding:7px 14px;margin-bottom:6px;border-radius:6px;border:1px solid rgba(0,245,255,.15);background:rgba(0,245,255,.04);font-family:'Rajdhani';font-size:.88rem;color:#b0c8d8"><span style="font-size:1.2rem">${it.icon}</span><span>${story}</span></div>`:''
+        }).join('')}
+      </div>`;
   } else {
-    fi.innerHTML=`<div style="color:var(--dim);font-size:.85rem">Hiç ekipman alınmadı — bir dahaki sefere daha doğru cevap ver!</div>`;
+    fi.innerHTML=`<div style="color:var(--dim);font-size:.9rem">Hiç ekipman alınmadı — bir dahaki sefere daha doğru cevap ver!</div>`;
   }
 }
 
+// ── END GAME ──
+function endGame(){
+  startVictoryAnimation();
+}
+
 function restartGame(){
+  if(victoryRaf){cancelAnimationFrame(victoryRaf);victoryRaf=null;}
   GS.money=0;GS.xp=0;GS.correctCount=0;GS.missionIdx=0;GS.currentChapter=-1;GS.wrongCount=0;GS.missionEarned=0;GS.chapterEarned=0;GS.inventory=[];
+  window._penaltyOverride=null;
   hideLayer('scr-final');
+  hideLayer('scr-victory');
   updateHUD();
   resizeCv();
   drawBg(0);
