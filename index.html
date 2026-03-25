@@ -33,20 +33,13 @@ body::after {
 #root { 
   position:fixed; inset:0; overflow:hidden; 
   display: grid;
-  grid-template-areas: "sidebar topbar" "sidebar main";
-  grid-template-columns: var(--side-w) 1fr;
+  grid-template-areas: "topbar" "main";
+  grid-template-columns: 1fr;
   grid-template-rows: var(--top-h) 1fr;
 }
 
 #side-nav {
-  grid-area: sidebar;
-  background: #050510;
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
-  z-index: 1000;
+  display: none;
 }
 
 .nav-item {
@@ -164,52 +157,73 @@ body::after {
 #speech-wrap.show { opacity:1; pointer-events:all; }
 
 .transmission-box {
-  background: rgba(13, 11, 32, 0.95);
-  border: 1px solid var(--accent);
-  border-left: 4px solid var(--neon);
-  padding: 18px 20px;
+  background: rgba(8, 6, 22, 0.92);
+  border: 1px solid rgba(0,245,255,0.25);
+  border-left: 3px solid var(--neon);
+  padding: 16px 18px;
   position: relative;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-  border-radius: 4px;
+  box-shadow: 0 0 30px rgba(0,245,255,0.08), inset 0 0 60px rgba(0,245,255,0.03);
+  border-radius: 2px;
+  backdrop-filter: blur(8px);
 }
 
-/* Tail arrow pointing down-left toward character */
+.transmission-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,245,255,0.015) 2px,
+    rgba(0,245,255,0.015) 4px
+  );
+  pointer-events: none;
+}
+
+/* Tail arrow pointing down toward character */
 .transmission-box::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: -8px;
   left: 30px;
-  border: 6px solid transparent;
-  border-top-color: rgba(13, 11, 32, 0.95);
+  width: 0; height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid rgba(8, 6, 22, 0.92);
 }
 
 .trans-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 10px;
   font-family: 'Share Tech Mono';
-  font-size: 11px;
-  color: var(--neon);
+  font-size: 10px;
+  color: var(--dim);
   letter-spacing: 2px;
 }
 
+.trans-header svg { color: var(--neon); opacity: 0.6; }
+
 .trans-header .spk-name {
-  color: var(--neon2);
+  color: var(--neon);
   font-weight: 700;
+  font-size: 12px;
+  text-shadow: 0 0 8px var(--neon);
 }
 
 .trans-header .dots {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   margin-left: auto;
 }
 
-.trans-header .dot { width: 6px; height: 6px; background: var(--dim); }
-.trans-header .dot.active { background: var(--neon); }
+.trans-header .dot { width: 5px; height: 5px; background: var(--dim); }
+.trans-header .dot.active { background: var(--neon); box-shadow: 0 0 4px var(--neon); }
 
 .speech-txt {
-  font-family:'Rajdhani'; font-size:1.1rem; font-weight:500; color:var(--text); line-height:1.6;
+  font-family:'Rajdhani'; font-size:1.05rem; font-weight:500; color:rgba(200,220,240,0.95); line-height:1.6;
 }
 
 .speech-txt b { color: var(--neon2); text-shadow: 0 0 10px var(--neon2); }
@@ -1641,12 +1655,7 @@ function animLoop() {
       document.getElementById('speech-txt').textContent=st.typed;
     }
     if(st.typed.length>=st.full.length){
-      st.idleTimer++;
-      if(st.idleTimer>90){
-        st.lineIdx++;
-        if(st.lineIdx<st.lines.length) beginLine();
-        else {st.phase='walk_out';hideSpeech();}
-      }
+      // Wait for user to press SPACE (handled in keydown listener)
     }
   } else if(st.phase==='walk_out'){
     st.npcX-=3.4;
@@ -2864,15 +2873,31 @@ function restartGame(){
 resizeCv();
 drawBg(0);
 updateHUD();
-setActiveNav('Terminal');
 
-// Sidebar navigation click handlers
-document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', () => {
-    const name = el.querySelector('span').textContent.toLowerCase();
-    setActiveNav(name);
-    if(name === 'archive') { showGuide(); }
-  });
+// ── SPACE KEY HANDLER ──
+// Only advance dialogue during 'talk' phase, ignore during walk_in/walk_out
+document.addEventListener('keydown', function(e) {
+  if (e.code === 'Space' || e.key === ' ') {
+    e.preventDefault(); // Prevent SPACE from activating focused buttons
+    
+    // Only respond if we're in talk phase
+    if (animSt.phase === 'talk' && animSt.typed.length >= animSt.full.length) {
+      animSt.lineIdx++;
+      if (animSt.lineIdx < animSt.lines.length) {
+        beginLine();
+      } else {
+        animSt.phase = 'walk_out';
+        hideSpeech();
+      }
+    }
+  }
+});
+
+// Prevent buttons from keeping focus (stops SPACE re-triggering them)
+document.addEventListener('click', function(e) {
+  if (e.target.tagName === 'BUTTON') {
+    e.target.blur();
+  }
 });
 </script>
 </body>
