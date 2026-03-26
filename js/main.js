@@ -919,6 +919,8 @@ function loadMission(idx){
   const m=MISSIONS[idx];
   const chMissions=missionsForChapter(m.ch);
   const mPosInCh=chMissions.indexOf(m)+1;
+  const hMiss = document.getElementById('h-mission');
+  if(hMiss) hMiss.textContent = `${mPosInCh} / ${chMissions.length}`;
 
   // Base reward for this mission = chapter base / num missions in chapter
   const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/chMissions.length);
@@ -936,111 +938,111 @@ function loadMission(idx){
 // Each item provides a gameplay hint for specific mission types
 const EQUIPMENT_HINTS = {
   headphones: {
-    label: 'ğŸ§ Gamer KulaklÄ±k',
+    label: '🎧 Gamer Headset',
     color: '#00f5ff',
     hint: (m) => {
-      if(m.type==='mc') return 'KulaklÄ±ÄŸÄ±n gÃ¼rÃ¼ltÃ¼ engelleme Ã¶zelliÄŸi konsantrasyonunu artÄ±rdÄ± â€” yanlÄ±ÅŸ ÅŸÄ±klarÄ±n tonu farklÄ± hissettiriyor. Dikkatini daÄŸÄ±tan seÃ§enekleri bir ele.';
+      if(m.type==='mc') return 'Noise cancellation increases concentration — wrong choices feel different. Eliminate distractions.';
       return null;
     }
   },
   mousepad: {
-    label: 'ğŸ–±ï¸ RGB Mousepad',
+    label: '🖱️ RGB Mousepad',
     color: '#aaff00',
     hint: (m) => {
-      if(m.type==='dd') return 'GeniÅŸ mousepad sayesinde sÃ¼rÃ¼kle-bÄ±rak iÅŸlemleri Ã§ok daha kolay! Actor\'larÄ± sol, Use Case\'leri saÄŸa yerleÅŸtir.';
+      if(m.type==='dd') return 'Wide mousepad makes drag and drop easier! Actors left, Use Cases right.';
       return null;
     }
   },
   keyboard: {
-    label: 'âŒ¨ï¸ Mekanik Klavye',
+    label: '⌨️ Mechanical Keyboard',
     color: '#ff00aa',
     hint: (m) => {
-      if(m.type==='sb') return 'Klavyenin Blue Switch tuÅŸlarÄ± her kelimeyi net hissettiriyor â€” User Story\'de Ã¼Ã§ blank\'Ä± sÄ±rayla doldurmak iÃ§in: Ã¶nce AktÃ¶r, sonra Eylem, en son Fayda.';
+      if(m.type==='sb') return 'Blue Switch keys make words clear. For User Story blanks: Actor, then Action, then Benefit.';
       return null;
     }
   },
   webcam: {
-    label: 'ğŸ“· 4K Webcam',
+    label: '📸 4K Webcam',
     color: '#ffd700',
     hint: (m) => {
-      if(m.npc==='baker') return 'Webcam\'in yapay zeka yÃ¼z analizi Ahmet Usta\'nÄ±n jestlerini okudu: stok sorununu anlatÄ±rken "FÄ±rÄ±ncÄ±" ve "Depo GÃ¶revlisi"ni kastediyordu.';
-      if(m.npc==='librarian') return 'Webcam\'in gÃ¶z takibi teknolojisi Selin HanÄ±m\'Ä±n hangi User Story formatÄ±na baktÄ±ÄŸÄ±nÄ± analiz etti â€” "Bir [kim] olarak..." ile baÅŸlayanÄ± seÃ§men lazÄ±m.';
+      if(m.npc==='baker') return 'Webcam AI gesture analysis read Baker Ahmet: he meant Baker and Warehouse Clerk.';
+      if(m.npc==='librarian') return 'Webcam eye tracking for Ms. Selin: Choose the one starting with "As a..."';
       return null;
     }
   },
   monitor2: {
-    label: 'ğŸ–¥ï¸ Ã‡ift MonitÃ¶r',
+    label: '🖥️ Dual Monitors',
     color: '#00f5ff',
     hint: (m) => {
-      const base = 'Ä°kinci monitÃ¶rde referans dokÃ¼man aÃ§Ä±k! ';
-      if(m.type==='mc') return base + '<<include>> = ZOR BAÄLI (her zaman), <<extend>> = KOÅULLU (bazen). ÅÄ±klara bak: hangisi bu tanÄ±ma uyuyor?';
-      if(m.type==='dd') return base + 'Sol ekranda Actor tanÄ±mlarÄ±, saÄŸda Use Case Ã¶rnekleri gÃ¶rÃ¼nÃ¼yor. AktÃ¶r = KÄ°ÅÄ°/ROL, Use Case = EYLEM.';
-      return base + 'ReferanslarÄ±n artÄ±k parmaklarÄ±nÄ±n ucunda!';
+      const base = 'Reference doc is open on the second monitor! ';
+      if(m.type==='mc') return base + '<<include>> = MANDATORY (always), <<extend>> = CONDITIONAL (sometimes). Check the choices.';
+      if(m.type==='dd') return base + 'Actors on left, Use Cases on right. Actor = PERSON/ROLE, Use Case = ACTION.';
+      return base + 'References are now at your fingertips!';
     }
   },
   chair: {
-    label: 'ğŸª‘ Ergonomik Sandalye',
+    label: '🪑 Ergonomic Chair',
     color: '#aaff00',
-    hint: (m) => 'Ergonomik sandalye uzun analiz seanslarÄ±nda yorulmanÄ± engelliyor â€” bu soruyu Ã§Ã¶zmek iÃ§in daha net dÃ¼ÅŸÃ¼nÃ¼yorsun. YanlÄ±ÅŸ cevap iÃ§in -20% yerine -15% ceza uygula!'
+    hint: (m) => 'Ergonomic chair prevents fatigue - you think clearer. Penalty reduced from 20% to 15%!'
   },
   speaker: {
-    label: 'ğŸ”Š 5+1 Ses Sistemi',
+    label: '🔊 5.1 Sound System',
     color: '#ff00aa',
     hint: (m) => {
-      if(m.npc==='mimar') return 'Ses sistemi Mimar\'Ä±n sesindeki titremeleri yakaladÄ± â€” "bazen" ve "her zaman" kelimelerine Ã¶zellikle dikkat et. Bu iki kelime cevabÄ± belli eder.';
+      if(m.npc==='mimar') return 'Sound system catches voice limits - focus on "sometimes" and "always".';
       return null;
     }
   },
   light: {
-    label: 'ğŸ’¡ LED Pano IÅŸÄ±ÄŸÄ±',
+    label: '💡 LED Panel Light',
     color: '#ffd700',
     hint: (m) => {
-      if(m.type==='sb') return 'LED Ä±ÅŸÄ±ÄŸÄ±n altÄ±nda User Story ÅŸablonu kristal netliÄŸinde gÃ¶rÃ¼nÃ¼yor: [AktÃ¶r] â†’ [Eylem] â†’ [Fayda]. Bu sÄ±radan ayrÄ±lma!';
+      if(m.type==='sb') return 'LED light makes the template clear: [Actor] -> [Action] -> [Benefit]. Follow this order!';
       return null;
     }
   },
   monitor3: {
-    label: 'ğŸ“º ÃœÃ§lÃ¼ MonitÃ¶r',
+    label: '📺 Triple Monitors',
     color: '#aaff00',
-    hint: (m) => 'ÃœÃ§ monitÃ¶r tam gÃ¼Ã§! Sol: teori, Orta: soru, SaÄŸ: Ã§Ã¶zÃ¼m taslaÄŸÄ±. Bu seviyede tÃ¼m seÃ§enekleri yan yana gÃ¶rÃ¼yorsun â€” yanlÄ±ÅŸ cevabÄ± elemen Ã§ok daha kolay.'
+    hint: (m) => 'Triple monitors full power! Left: theory, Center: question, Right: draft. Easy to eliminate wrong answers.'
   },
   server: {
-    label: 'ğŸ–§ KiÅŸisel Sunucu',
+    label: '🖧 Personal Server',
     color: '#00f5ff',
     hint: (m) => {
-      if(m.type==='dd') return 'Sunucun tÃ¼m Actor/Use Case veritabanÄ±nÄ± taradÄ±! AktÃ¶rler her zaman sistemin DIÅINDA, Use Case\'ler sistemin Ä°Ã‡Ä°NDE olur â€” bu kural asla deÄŸiÅŸmez.';
+      if(m.type==='dd') return 'Server scanned the DB! Actors are ALWAYS OUTSIDE the system, Use Cases INSIDE.';
       return null;
     }
   },
   desk: {
-    label: 'ğŸ—ƒï¸ AkÄ±llÄ± Masa',
+    label: '🗄️ Smart Standing Desk',
     color: '#ff00aa',
-    hint: (m) => 'Motorlu masa en verimli Ã§alÄ±ÅŸma pozisyonuna geÃ§ti. Bu gÃ¶revde konsantrasyon maksimumda â€” hata baÅŸÄ±na ceza %20 yerine %15\'e dÃ¼ÅŸÃ¼yor!'
+    hint: (m) => 'Motorized desk at optimal position. Penalty reduced to 15%!'
   },
   vr: {
-    label: 'ğŸ¥½ VR Headset',
+    label: '🥽 VR Headset',
     color: '#ffd700',
-    hint: (m) => 'VR Headset Use Case diyagramÄ±nÄ± 3 boyutlu modelledi! AktÃ¶rler oval outside, Use Case\'ler dikdÃ¶rtgen inside â€” sanal ortamda gÃ¶rdÃ¼ÄŸÃ¼n bu yapÄ±yÄ± cevabÄ±na yansÄ±t.'
+    hint: (m) => 'VR Headset models in 3D! Actors outside, Use Cases inside. Apply this structure.'
   },
   neural_implant: {
     label: '🧠 Neural Link',
     color: '#ff00aa',
-    hint: (m) => 'Sistemdeki doğrudan zihinsel bağlantın hatalı yapıları anında seziyor. External API\'lerin de Actor olduğunu unutma!'
+    hint: (m) => 'Direct mental link senses structural flaws instantly. External APIs are Actors!'
   },
   quantum_server: {
     label: '⚛️ Quantum Server',
     color: '#00f5ff',
-    hint: (m) => 'Kuantum sunucu tüm olasılıkları denedi. Cevap sadece "Trigger Fraud Alarm"ın şarta bağlı çalışmasıyla ilgili.'
+    hint: (m) => 'Quantum server tried all permutations. It\'s about "Trigger Fraud Alarm" condition.'
   },
   ai_assistant: {
     label: '🤖 Shadow AI',
     color: '#ffd700',
-    hint: (m) => 'Gelişmiş AI yardımcınız en yüksek doğruluk oranına sahip aktör dizilimini simüle etti: Otomatik scriptler de dış sistem aktörleridir.'
+    hint: (m) => 'Advanced AI simulated highest accurate actor array: Scripts are external actors.'
   },
   cyber_deck: {
     label: '💻 Cyberdeck',
     color: '#aaff00',
-    hint: (m) => 'Efsanevi cyberdeck devrede. Hatalar için uygulanan kredi kesintisi sistemden tamamen silindi! (Penalty = 0%)'
+    hint: (m) => 'Legendary cyberdeck active. Penalty deductions eliminated! (Penalty = 0%)'
   }
 };
 
@@ -1074,7 +1076,7 @@ function showQuestion(m){
 
   const chMissions=missionsForChapter(m.ch);
   const mPos=chMissions.indexOf(m)+1;
-  document.getElementById('q-label').textContent=`ACTÄ°VE CHALLENGE // ${mPos} OF ${chMissions.length}`;
+  document.getElementById('q-label').textContent=`MISSION // ${mPos} OF ${chMissions.length}`;
   document.getElementById('q-xp-badge').textContent=`XP +${30+Math.round(20*1)}`;
   setActiveNav('Network');
 
@@ -1148,9 +1150,9 @@ function offerHelp(m){
   const canAfford=GS.money>=HELP_COST;
   hof.style.display='flex';
   hof.innerHTML=`
-    <div class="ho-text">ğŸ’¡ Konu anlatÄ±mÄ±nÄ± gÃ¶rmek ister misin?</div>
-    <div class="ho-cost">${canAfford?`â‚º${HELP_COST.toLocaleString()} karÅŸÄ±lÄ±ÄŸÄ±nda`:'Yetersiz bakiye'}</div>
-    ${canAfford?`<button class="btn btn-gold btn-sm" onclick="buyHelp()">YARDIM AL</button>`:`<button class="btn btn-sm" style="border-color:var(--dim);color:var(--dim);cursor:not-allowed" disabled>YARDIM AL</button>`}
+    <div class="ho-text">💡 Do you want to see the concept explanation?</div>
+    <div class="ho-cost">${canAfford?`₺${HELP_COST.toLocaleString()} credits`:'Insufficient balance'}</div>
+    ${canAfford?`<button class="btn btn-gold btn-sm" onclick="buyHelp()">GET HELP</button>`:`<button class="btn btn-sm" style="border-color:var(--dim);color:var(--dim);cursor:not-allowed" disabled>GET HELP</button>`}
   `;
 }
 
@@ -1167,7 +1169,7 @@ function buyHelp(){
   if(hof) hof.style.display='none';
   // Also show the standard hint
   const hb=document.getElementById('hint-box');
-  if(m.hint){hb.style.display='block';hb.innerHTML=`<strong>ğŸ’¡ Ä°pucu:</strong> ${m.hint}`;}
+  if(m.hint){hb.style.display='block';hb.innerHTML=`<strong>💡 Hint:</strong> ${m.hint}`;}
 }
 
 function updatePotDisplay(base, wrongs){
@@ -1178,8 +1180,8 @@ function updatePotDisplay(base, wrongs){
   const pr=document.getElementById('penalty-row');
   if(wrongs>0){
     const lost=base-reduced;
-    const penLabel = window._penaltyOverride ? ' (Masa/Sandalye avantajÄ±!)' : '';
-    pr.textContent=`âš  ${wrongs} hata â€” â‚º${lost.toLocaleString()} dÃ¼ÅŸtÃ¼${penLabel}`;
+    const penLabel = window._penaltyOverride ? ' (Desk/Chair advantage!)' : '';
+    pr.textContent=`⚠️ ${wrongs} mistakes - ₺${lost.toLocaleString()} deducted${penLabel}`;
   } else { pr.textContent=''; }
 }
 
@@ -1466,8 +1468,8 @@ function buildShopCard(item){
 function openShop(chapterIdx, cb){
   window._shopCb=cb;
   const tier=SHOP_TIER_PER_CHAPTER[chapterIdx]||1;
-  document.getElementById('shop-chapter-title').textContent=`BLACK MARKET TERMÄ°NAL`;
-  document.getElementById('shop-wallet-val').textContent=`â‚º${GS.money.toLocaleString()}`;
+  document.getElementById('shop-chapter-title').textContent=`BLACK MARKET TERMINAL`;
+  document.getElementById('shop-wallet-val').textContent=`₺${GS.money.toLocaleString()}`;
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
   SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>grid.appendChild(buildShopCard(item)));
@@ -1489,7 +1491,7 @@ function buyItem(id){
 function openShopRefresh(){
   const chapterIdx=GS.currentChapter;
   const tier=SHOP_TIER_PER_CHAPTER[chapterIdx]||1;
-  document.getElementById('shop-wallet-val').textContent=`â‚º${GS.money.toLocaleString()}`;
+  document.getElementById('shop-wallet-val').textContent=`₺${GS.money.toLocaleString()}`;
   const grid=document.getElementById('shop-grid');
   grid.innerHTML='';
   SHOP_ITEMS.filter(it=>it.tier<=tier).forEach(item=>grid.appendChild(buildShopCard(item)));
@@ -1498,7 +1500,7 @@ function openShopRefresh(){
 
 function renderInventoryBar(){
   const bar=document.getElementById('inventory-bar');
-  if(GS.inventory.length===0){bar.innerHTML='<span style="color:var(--dim);font-size:.78rem">HenÃ¼z alÄ±m yok</span>';return;}
+  if(GS.inventory.length===0){bar.innerHTML='<span style="color:var(--dim);font-size:.78rem">No items acquired yet</span>';return;}
   bar.innerHTML='';
   GS.inventory.forEach(id=>{
     const it=SHOP_ITEMS.find(i=>i.id===id);
@@ -1528,15 +1530,15 @@ function setActiveNav(name){
 
 // â”€â”€ HUD â”€â”€
 function updateHUD(){
-  document.getElementById('h-money').textContent=`Balance: â‚º${GS.money.toLocaleString()}`;
+  document.getElementById('h-money').textContent=`₺${GS.money.toLocaleString()}`;
   document.getElementById('h-xp').textContent=`${Math.min(Math.round((GS.xp/600)*100),100)}%`;
   document.getElementById('h-xpbar').style.width=Math.min((GS.xp/600)*100,100)+'%';
   let t='Intern';
   if(GS.xp>=80)t='Junior';
   if(GS.xp>=160)t='Senior';
   if(GS.xp>=280)t='Shadow Analyst';
-  document.getElementById('h-title').textContent=`Rank: ${t}`;
-  document.getElementById('h-chap').textContent=`PHASE: ${GS.currentChapter + 1}`;
+  document.getElementById('h-title').textContent=`${t}`;
+  document.getElementById('h-chap').textContent=`${GS.currentChapter + 1} / 5`;
 }
 
 // â”€â”€ VICTORY ANIMATION â”€â”€
@@ -1716,44 +1718,44 @@ function showFinalStats(){
   if(victoryRaf){cancelAnimationFrame(victoryRaf);victoryRaf=null;}
   hideLayer('scr-victory');
   showLayer('scr-final');
-  document.getElementById('h-chap').textContent='âœ“ COMPLETE';
+  document.getElementById('h-chap').textContent='✓ COMPLETE';
   document.getElementById('final-stats').innerHTML=`
-    <div class="fs-stat"><div class="fs-val">â‚º${GS.money.toLocaleString()}</div><div class="fs-lbl">Kalan Bakiye</div></div>
-    <div class="fs-stat"><div class="fs-val">${GS.xp}</div><div class="fs-lbl">Toplam XP</div></div>
-    <div class="fs-stat"><div class="fs-val">${GS.correctCount}/${MISSIONS.length}</div><div class="fs-lbl">Ã‡Ã¶zÃ¼len GÃ¶rev</div></div>
-    <div class="fs-stat"><div class="fs-val">${GS.inventory.length}</div><div class="fs-lbl">AlÄ±nan Ekipman</div></div>
+    <div class="fs-stat"><div class="fs-val">₺${GS.money.toLocaleString()}</div><div class="fs-lbl">Remaining Balance</div></div>
+    <div class="fs-stat"><div class="fs-val">${GS.xp}</div><div class="fs-lbl">Total XP</div></div>
+    <div class="fs-stat"><div class="fs-val">${GS.correctCount}/${MISSIONS.length}</div><div class="fs-lbl">Missions Solved</div></div>
+    <div class="fs-stat"><div class="fs-val">${GS.inventory.length}</div><div class="fs-lbl">Equipment Acquired</div></div>
   `;
   const fi=document.getElementById('final-inventory');
   if(GS.inventory.length>0){
     const storyLines = {
-      headphones: 'Gamer KulaklÄ±k â€” MC sorularÄ±nda konsantrasyonunu tavan yaptÄ±rdÄ±.',
-      mousepad:   'RGB Mousepad â€” Drag&Drop sorularÄ±nÄ± sÃ¼zercesine Ã§Ã¶zdÃ¼.',
-      keyboard:   'Mekanik Klavye â€” User Story blanklarÄ± iÃ§in klavye ipucu saÄŸladÄ±.',
-      webcam:     '4K Webcam â€” MÃ¼ÅŸteri jest analizi ile BÃ¶lÃ¼m 0\'da ipucu verdi.',
-      monitor2:   'Ã‡ift MonitÃ¶r â€” Referans ekranÄ± her soru tipinde yardÄ±ma koÅŸtu.',
-      chair:      'Ergonomik Sandalye â€” Hata cezasÄ±nÄ± %15\'e indirerek para korudu.',
-      speaker:    '5+1 Ses Sistemi â€” Mimar\'Ä±n anahtar kelimelerini ses analiziyle yakaladÄ±.',
-      light:      'LED Pano IÅŸÄ±ÄŸÄ± â€” Story Builder sorularÄ±nÄ± kristal net gÃ¶sterdi.',
-      monitor3:   'ÃœÃ§lÃ¼ MonitÃ¶r Seti â€” 3 ekran gÃ¼cÃ¼yle son bÃ¶lÃ¼mde rakipsizdin.',
-      server:     'KiÅŸisel Sunucu â€” DD sorularÄ±nda Actor/UseCase veritabanÄ± taramasÄ± yaptÄ±.',
-      desk:       'AkÄ±llÄ± Masa â€” Hata cezasÄ±nÄ± %15\'e dÃ¼ÅŸÃ¼rÃ¼p bakiyeni korudu.',
-      vr:         'VR Headset â€” Use Case diyagramÄ±nÄ± 3D\'de modelleyerek son bÃ¶lÃ¼mÃ¼ domine etti.',
-      neural_implant: 'Neural Link — Beyin arayüzü ile sistem hatalarını hissettin.',
-      quantum_server: 'Quantum Server — Tüm permutationları milisaniyede hesapladın.',
-      ai_assistant:   'Shadow AI — Yanında hep bir asistan vardı, seni korudu.',
-      cyber_deck:     'Militech Cyberdeck — Sistemin tüm güvenlik açıklarını aşarak kayıpsız tamamladın.',
+      headphones: 'Gamer Headset — concentration peaked in MC questions.',
+      mousepad:   'RGB Mousepad — glided through Drag&Drop questions.',
+      keyboard:   'Mechanical Keyboard — provided hints for User Story blanks.',
+      webcam:     '4K Webcam — provided gesture analysis hints.',
+      monitor2:   'Dual Monitors — reference screen helped in all types.',
+      chair:      'Ergonomic Chair — protected money by dropping penalty to 15%.',
+      speaker:    '5.1 Sound System — caught the Architect\'s keywords.',
+      light:      'LED Panel Light — made Story Builder questions crystal clear.',
+      monitor3:   'Triple Monitors — you were unbeatable with 3 screens.',
+      server:     'Personal Server — scanned DB for DD questions.',
+      desk:       'Smart Desk — protected your balance dropping penalty to 15%.',
+      vr:         'VR Headset — dominated by modeling Use Cases in 3D.',
+      neural_implant: 'Neural Link — sensed system flaws via brain interface.',
+      quantum_server: 'Quantum Server — calculated all permutations in milliseconds.',
+      ai_assistant:   'Shadow AI — constant shadow protection.',
+      cyber_deck:     'Militech Cyberdeck — bypassed all security with zero penalty.',
     };
     fi.innerHTML=`
-      <div style="font-family:Orbitron;font-size:.72rem;color:var(--neon);letter-spacing:2px;margin-bottom:10px">ğŸ›’ EKÄ°PMANLARIN OYUNA KATKISI</div>
+      <div style="font-family:Orbitron;font-size:.72rem;color:var(--neon);letter-spacing:2px;margin-bottom:10px">🛒 GEAR CONTRIBUTION</div>
       <div style="max-width:680px;margin:0 auto">
         ${GS.inventory.map(id=>{
           const it=SHOP_ITEMS.find(i=>i.id===id);
-          const story=storyLines[id]||`${it?.icon||''} ${it?.name||id}`;
+          const story=storyLines[id]||(it ? it.icon+' '+it.name : id);
           return it?`<div style="display:flex;align-items:center;gap:10px;padding:7px 14px;margin-bottom:6px;border-radius:6px;border:1px solid rgba(0,245,255,.15);background:rgba(0,245,255,.04);font-family:'Rajdhani';font-size:.88rem;color:#b0c8d8"><span style="font-size:1.2rem">${it.icon}</span><span>${story}</span></div>`:''
         }).join('')}
       </div>`;
   } else {
-    fi.innerHTML=`<div style="color:var(--dim);font-size:.9rem">HiÃ§ ekipman alÄ±nmadÄ± â€” bir dahaki sefere daha doÄŸru cevap ver!</div>`;
+    fi.innerHTML=`<div style="color:var(--dim);font-size:.9rem">No equipment acquired - answer better next time!</div>`;
   }
 }
 
