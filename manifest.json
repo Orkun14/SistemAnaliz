@@ -1,0 +1,21 @@
+{
+  "name": "Shadow Analyst: The Use Case Detective",
+  "short_name": "Shadow Analyst",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#06060f",
+  "theme_color": "#06060f",
+  "description": "Decrypting business requirements in the digital underworld.",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
