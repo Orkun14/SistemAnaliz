@@ -1,4 +1,4 @@
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+﻿// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  CANVAS 2D ENGINE
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const CV = document.getElementById('scene-canvas');
@@ -739,13 +739,13 @@ const MISSIONS = [
   },
   { ch:0, bg:0, npc:'gym',
     lines:[{speaker:'MR. MEHMET',color:'#27ae60',text:'Analyst friend! My gym needs a system.'},{speaker:'MR. MEHMET',color:'#27ae60',text:'Members will register, trainers will make schedules.'},{speaker:'MR. MEHMET',color:'#27ae60',text:'Every time "Register" runs, email verification is a must!'}],
-    concept:{title:'ğŸ”— <<include>> RELATIONSHIP',body:'If a use case always triggers\nanother one when it runs\nâ†’ use <<include>>'},
+    concept:{title:'[>] <<include>> RELATIONSHIP',body:'If a use case always triggers\nanother one when it runs\n-> use <<include>>'},
     q:'If "Email Verification" must run every time "Member Registration" runs, what is the relationship type?',
-    hint:'Mandatory/always â†’ <<include>>. Sometimes/optional â†’ <<extend>>.',
+    hint:'Mandatory/always -> <<include>>. Sometimes/optional -> <<extend>>.',
     type:'mc',
     choices:[
-      {id:'c1',text:'<<extend>> â€” Optional extension',ok:false},
-      {id:'c2',text:'<<include>> â€” Mandatory dependency',ok:true},
+      {id:'c1',text:'<<extend>> - Optional extension',ok:false},
+      {id:'c2',text:'<<include>> - Mandatory dependency',ok:true},
       {id:'c3',text:'Inheritance (Generalization)',ok:false},
       {id:'c4',text:'Simple Association relationship',ok:false},
     ],
@@ -753,7 +753,7 @@ const MISSIONS = [
   // â”€â”€ CHAPTER 2 â”€â”€
   { ch:1, bg:1, npc:'mimar',
     lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'...Our shadow members must leave no trace when entering the system.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Our leaders must see everything. Everything.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Write the User Story. If you fail... there will be consequences.'}],
-    concept:{title:'ğŸ”’ ADVANCED USER STORY',body:'"As a(n) [Role],\nI want to [Action],\nso that [Reason/Benefit]."\n\nEach part must be CLEAR!'},
+    concept:{title:'[!] ADVANCED USER STORY',body:'"As a(n) [Role],\nI want to [Action],\nso that [Reason/Benefit]."\n\nEach part must be CLEAR!'},
     q:"Complete the correct User Story for the 'Shadow Member' based on the Architect's request:",
     hint:'"Shadow Member" acts, anonymous login is the action, identity concealment is the benefit.',
     type:'sb',
@@ -765,10 +765,10 @@ const MISSIONS = [
     },
   },
   { ch:1, bg:1, npc:'mimar',
-    lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Our members send messages.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Sometimes â€” only sometimes â€” they want encryption.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'How do you model this optional relationship?'}],
-    concept:{title:'ğŸ”€ <<extend>> RELATIONSHIP',body:'Optional scenario:\nConditionally added to\nthe main use case.\n\n"Encrypt Message" only\nactivates sometimes.'},
+    lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Our members send messages.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Sometimes - only sometimes - they want encryption.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'How do you model this optional relationship?'}],
+    concept:{title:'[~] <<extend>> RELATIONSHIP',body:'Optional scenario:\nConditionally added to\nthe main use case.\n\n"Encrypt Message" only\nactivates sometimes.'},
     q:'What is the correct Use Case relationship for "Encrypt Message" which is sometimes added to "Send Message"?',
-    hint:'"Sometimes", "optional" â†’ <<extend>>.',
+    hint:'"Sometimes", "optional" -> <<extend>>.',
     type:'mc',
     choices:[
       {id:'c1',text:'"Send Message" <<include>> "Encrypt Message"',ok:false},
@@ -779,9 +779,9 @@ const MISSIONS = [
   },
   { ch:1, bg:1, npc:'mimar',
     lines:[{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'There are three actors: Shadow Member, Leader, Admin.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Login is common for everyone. Reports are only for the Leader.'},{speaker:'ARCHITECT',color:'#cc00ff',dark:true,text:'Classify them correctly, analyst.'}],
-    concept:{title:'ğŸ‘¥ MULTIPLE ACTORS',body:'Multiple actors can typically\nuse the same use case.\n\nBut special use cases\nbelong strictly to a specific actor.'},
+    concept:{title:'[*] MULTIPLE ACTORS',body:'Multiple actors can typically\nuse the same use case.\n\nBut special use cases\nbelong strictly to a specific actor.'},
     q:'Correctly classify the actors and use cases to be included into the system:',
-    hint:'Login â†’ Everyone. View Reports â†’ Only Leader.',
+    hint:'Login -> Everyone. View Reports -> Only Leader.',
     type:'dd',
     items:[{id:'a1',l:'Shadow Member',t:'actor'},{id:'a2',l:'Leader',t:'actor'},{id:'a3',l:'System Admin',t:'actor'},{id:'u1',l:'Login',t:'usecase'},{id:'u2',l:'Send Anonymous Message',t:'usecase'},{id:'u3',l:'View Member Reports',t:'usecase'},{id:'u4',l:'System Audit',t:'usecase'}],
     ca:['a1','a2','a3'],cu:['u1','u2','u3','u4'],
@@ -789,9 +789,9 @@ const MISSIONS = [
   // â”€â”€ CHAPTER 3 â”€â”€
   { ch:2, bg:2, npc:'mimar',
     lines:[{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'Time for the big contract, analyst.'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'We are going to rebuild the entire membership system.'},{speaker:'ARCHITECT',color:'#ffd700',dark:true,text:'You need to model the Use Case relationships.'}],
-    concept:{title:'ğŸ† COMPREHENSIVE MODELING',body:"1. Identify all actors\n2. List each actor's use cases\n3. Add <<include>> and <<extend>>\n4. Draw the system boundary"},
+    concept:{title:'[+] COMPREHENSIVE MODELING',body:"1. Identify all actors\n2. List each actor's use cases\n3. Add <<include>> and <<extend>>\n4. Draw the system boundary"},
     q:'"Member Login" requires "Session Log" every time; "2FA" activates only if enabled. The two relationships respectively?',
-    hint:'Mandatory â†’ <<include>>, Conditional â†’ <<extend>>.',
+    hint:'Mandatory -> <<include>>, Conditional -> <<extend>>.',
     type:'mc',
     choices:[
       {id:'c1',text:'"Session Log"=<<extend>>, "2FA"=<<include>>',ok:false},
@@ -1176,7 +1176,7 @@ function updatePotDisplay(base, wrongs){
   const pct = window._penaltyOverride || WRONG_PENALTY_PCT;
   const reduced=Math.round(base*Math.pow(1-pct, wrongs));
   GS.missionEarned=reduced;
-  document.getElementById('q-pot').textContent=`â‚º${reduced.toLocaleString()}`;
+  document.getElementById('q-pot').textContent=`₺${reduced.toLocaleString()}`;
   const pr=document.getElementById('penalty-row');
   if(wrongs>0){
     const lost=base-reduced;
@@ -1197,7 +1197,7 @@ function renderMC(m){
     btn.onclick=()=>{
       document.querySelectorAll('.c-btn').forEach(b=>b.classList.remove('sel'));
       btn.classList.add('sel');
-      document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${ch.id}')">âœ“ VERIFY</button>`;
+      document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${ch.id}')">✔️ VERIFY</button>`;
     };
     list.appendChild(btn);
   });
@@ -1222,7 +1222,7 @@ function checkMC(sid){
         const id=b.id.replace('cb-','');
         document.querySelectorAll('.c-btn:not(.no)').forEach(x=>x.classList.remove('sel'));
         b.classList.add('sel');
-        document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${id}')">âœ“ VERIFY</button>`;
+        document.getElementById('action-row').innerHTML=`<button class="btn btn-neon" onclick="checkMC('${id}')">✔️ VERIFY</button>`;
       };
     });
     if(m.concept) offerHelp(m);
@@ -1287,7 +1287,7 @@ function renderDD(m){
       sl.forEach(id=>{
         const item=m.items.find(x=>x.id===id);
         const chip=document.createElement('span');chip.className='placed';
-        chip.innerHTML=`${item.l} <span class="x" onclick="rmDD('${id}','${sl===aSlot?'a':'u'}')">âœ•</span>`;
+        chip.innerHTML=`${item.l} <span class="x" onclick="rmDD('${id}','${sl===aSlot?'a':'u'}')">❌</span>`;
         cont.appendChild(chip);
       });
     });
@@ -1316,7 +1316,7 @@ function ddSubmitBtn(m,aSlot,uSlot){
   const ar=document.getElementById('action-row');ar.innerHTML='';
   const hasAny=aSlot.length>0||uSlot.length>0;
   if(!hasAny) return;
-  const b=document.createElement('button');b.className='btn btn-neon';b.textContent='âœ“ ACCEPT ANALYSIS';
+  const b=document.createElement('button');b.className='btn btn-neon';b.textContent='✔️ ACCEPT ANALYSIS';
   b.onclick=()=>{
     const aOk=m.ca.every(a=>aSlot.includes(a))&&aSlot.every(a=>m.ca.includes(a));
     const uOk=m.cu.every(u=>uSlot.includes(u))&&uSlot.every(u=>m.cu.includes(u));
@@ -1342,7 +1342,7 @@ function renderSB(m){
     let html='<div class="sb-template">';
     m.template.forEach(part=>{
       if(part.startsWith('BLANK_')){
-        if(filled[part])html+=`<span class="sb-blank filled" onclick="clearSB('${part}')">${filled[part]} âœ•</span>`;
+        if(filled[part])html+=`<span class="sb-blank filled" onclick="clearSB('${part}')">${filled[part]} ❌</span>`;
         else html+=`<span class="sb-blank">[select]</span>`;
       }else{html+=part;}
     });
@@ -1359,7 +1359,7 @@ function renderSB(m){
     });
     ia.innerHTML=html;
     const all=Object.values(filled).every(v=>v!==null);
-    document.getElementById('action-row').innerHTML=all?`<button class="btn btn-neon" onclick="checkSB()">âœ“ VERIFY USER STORY</button>`:'';
+    document.getElementById('action-row').innerHTML=all?`<button class="btn btn-neon" onclick="checkSB()">✔️ VERIFY USER STORY</button>`:'';
   }
   window.fillSB=(k,v)=>{filled[k]=v;rebuild();};
   window.clearSB=(k)=>{filled[k]=null;rebuild();};
@@ -1375,8 +1375,8 @@ function checkSB(){
     GS.wrongCount++;
     const base=Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length);
     updatePotDisplay(base,GS.wrongCount);
-    fb.className='fb-box no';fb.textContent='âŒ User Story doÄŸru deÄŸil! Kim, ne, neden â€” her parÃ§ayÄ± kontrol et.';
-    document.getElementById('action-row').innerHTML=`<button class="btn btn-pink" onclick="renderSB(window._sbM)">ğŸ”„ Tekrar Dene</button>`;
+    fb.className='fb-box no';fb.textContent='âŒ User Story is incorrect! Check Who, What, Why again.';
+    document.getElementById('action-row').innerHTML=`<button class="btn btn-pink" onclick="renderSB(window._sbM)">ğŸ”„ Try Again</button>`;
     if(m.concept) offerHelp(m);
   }
 }
@@ -1394,8 +1394,8 @@ function onCorrect(m){
   // Slide panel out, show reward
   hidePanel();
   setTimeout(()=>{
-    const penalty=GS.wrongCount>0?`${GS.wrongCount} hata nedeniyle â‚º${Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length)-earned} kesildi`:'';
-    document.getElementById('rew-title').innerHTML=GS.wrongCount===0?'MÃœKEMMEL!<br>TAM PUAN!':'GÃ–REV<br>TAMAMLANDI!';
+    const penalty=GS.wrongCount>0?`${GS.wrongCount} mistakes deducted ₺${Math.round(CHAPTER_BASE_REWARD[m.ch]/missionsForChapter(m.ch).length)-earned}`:'';
+    document.getElementById('rew-title').innerHTML=GS.wrongCount===0?'PERFECT!<br>FULL SCORE!':'MISSION<br>COMPLETED!';
     document.getElementById('rew-sub').textContent=GS.wrongCount===0?'OPERATION ANALYSIS: VERIFIED // PERFECT SCORE':'OPERATION ANALYSIS: VERIFIED // REWARD DISPATCHING';
     document.getElementById('rew-money-val').textContent=earned.toLocaleString();
     document.getElementById('rew-xp-val').textContent=`+${xpGain} XP`;
@@ -1446,9 +1446,9 @@ function buildShopCard(item){
       <div class="si-name">${item.name}</div>
       <div class="si-desc">${item.desc}</div>
       <div class="si-price-row">
-        <div class="si-price">${owned?'âœ“ ALINDI':`â‚º${item.price.toLocaleString()}`}</div>
+        <div class="si-price">${owned?'✔️ OWNED':`₺${item.price.toLocaleString()}`}</div>
         ${owned
-          ?`<div class="shop-bought-badge">âœ“ OWNED</div>`
+          ?`<div class="shop-bought-badge">✔️ OWNED</div>`
           :canAfford
             ?`<button class="shop-buy-btn" onclick="buyItem('${item.id}')">PURCHASE</button>`
             :`<button class="shop-buy-btn" disabled style="opacity:.4;cursor:not-allowed">PURCHASE</button>`
