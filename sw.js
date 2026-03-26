@@ -1,4 +1,4 @@
-const CACHE_NAME = 'shadow-analyst-v1';
+const CACHE_NAME = 'shadow-analyst-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
